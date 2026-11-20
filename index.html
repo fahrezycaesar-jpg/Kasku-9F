@@ -14,7 +14,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
   import { getDatabase, ref, onValue, push, set, update, remove, get, child } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-  // KONFIGURASI FIREBASE (REALTIME DATABASE)
   const firebaseConfig = {
     apiKey: "AIzaSyB5zD7EJwjkZEvxwH53otiZhKhzRJew5w",
     authDomain: "kasku-9f.firebaseapp.com",
@@ -29,7 +28,7 @@
   const db = getDatabase(app);
 
   let currentUser = null;
-  let currentRole = null; // 'siswa', 'bendahara', 'wali'
+  let currentRole = null;
   let appSettings = { pin: "130711#$$#", className: "IX F", nominalKas: 2000, limitTunggakan: 2 };
   let students = [];
   let payments = [];
@@ -46,7 +45,6 @@
     });
   }
 
-  // DATA 31 SISWA
   const defaultSiswa = {
     '1': { id: 1, nisn: '0114066287', absen: 1, name: 'AFFLAH INTAN NOOR IZZAH', isBendahara: false },
     '2': { id: 2, nisn: '0118692248', absen: 2, name: 'AHMAD RENO KHOIDOR MAULANA', isBendahara: false },
@@ -84,6 +82,7 @@
   async function initApp() {
     const dbRef = ref(db);
     
+    // GUNAKAN "siswa" SESUAI DATABASE KAMU
     const setSnap = await get(child(dbRef, 'settings/global'));
     if (!setSnap.exists()) {
       await set(ref(db, 'settings/global'), appSettings);
@@ -91,13 +90,12 @@
       appSettings = setSnap.val();
     }
 
-    // PAKSA MASUKKAN DATA JIKA KURANG DARI 31 SISWA
-    const stuSnap = await get(child(dbRef, 'students'));
+    const stuSnap = await get(child(dbRef, 'siswa'));
     if (!stuSnap.exists() || Object.keys(stuSnap.val()).length < 31) {
-      await set(ref(db, 'students'), defaultSiswa);
+      await set(ref(db, 'siswa'), defaultSiswa);
     }
 
-    onValue(ref(db, 'students'), (snap) => {
+    onValue(ref(db, 'siswa'), (snap) => {
       students = [];
       snap.forEach(d => students.push(d.val()));
       students.sort((a,b) => a.absen - b.absen);
@@ -127,7 +125,6 @@
     document.getElementById('login-screen').classList.remove('hidden');
   }
 
-  // LOGIN
   window.loginSiswa = function() {
     if(students.length === 0) return Swal.fire('Tunggu', 'Data sedang dimuat, coba lagi 2 detik lagi.', 'info');
 
@@ -135,16 +132,20 @@
     const nama = document.getElementById('login-nama').value.trim();
     const absen = parseInt(document.getElementById('login-absen').value);
 
-    const student = students.find(s => s.nisn === nisn && s.absen === absen && s.name.toLowerCase() === nama.toLowerCase());
+    // LOGIKA LEBIH PINTAR: Abaikan spasi berlebih & huruf besar/kecil
+    const student = students.find(s => 
+      String(s.nisn).trim() === String(nisn).trim() && 
+      parseInt(s.absen) === parseInt(absen) && 
+      String(s.name).trim().toLowerCase() === String(nama).trim().toLowerCase()
+    );
+
     if (!student) return Swal.fire('Gagal', 'NISN, Nama, atau Absen salah! Pastikan Nama diketik lengkap.', 'error');
 
     currentUser = student;
     
-    // Cek jika yang login adalah Bendahara
     if(student.isBendahara) {
-      // Tampilkan tombol switch di navbar
       document.getElementById('btn-switch-bendahara').classList.remove('hidden');
-      showPage('siswa'); // Default masuk ke halaman siswa dulu
+      showPage('siswa'); 
       logActivity('Bendahara', `${student.name} login sebagai Siswa`);
     } else {
       document.getElementById('btn-switch-bendahara').classList.add('hidden');
@@ -163,7 +164,6 @@
     logActivity('Wali Kelas', `Wali Kelas login`);
   };
 
-  // SWITCH ROLE (BENDAHARA <-> SISWA)
   window.switchRole = function(role) {
     if(role === 'bendahara') {
       currentRole = 'bendahara';
@@ -204,7 +204,6 @@
     if(myChart) { myChart.destroy(); myChart = null; }
   }
 
-  // SISTEM NOTIFIKASI (SAMA SEPERTI SEBELUMNYA)
   function requestNotifPermission() {
     if (!("Notification" in window)) return;
     if (Notification.permission !== "granted" && Notification.permission !== "denied") {
@@ -242,7 +241,6 @@
     }
   }
 
-  // KALKULASI & DASHBOARD
   function hitungTunggakan(siswaId) {
     const totalBayar = payments.filter(p => p.studentId == siswaId).reduce((a, b) => a + b.amount, 0);
     const target = 40000;
@@ -331,7 +329,6 @@
     }
   }
 
-  // AKSI
   window.tambahKas = async function(siswaId, nominal) {
     await push(ref(db, 'payments'), { studentId: siswaId, amount: nominal, note: "Kas Manual", date: timeNow() });
     Swal.fire('Sukses', 'Kas dicatat!', 'success');
@@ -451,13 +448,11 @@
 
 <body class="bg-slate-50 text-slate-800 font-sans pb-20">
 
-<!-- LOADING -->
 <div id="loading-screen" class="fixed inset-0 bg-slate-50 flex flex-col items-center justify-center z-50">
   <i class="fas fa-circle-notch fa-spin text-4xl text-emerald-500 mb-4"></i>
   <h2 class="font-bold text-lg text-slate-700">Menghubungkan Kasku...</h2>
 </div>
 
-<!-- LOGIN PAGE -->
 <div id="login-screen" class="hidden min-h-screen flex items-center justify-center p-4">
   <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
     <div class="bg-emerald-600 p-6 text-white text-center">
@@ -467,14 +462,12 @@
     </div>
     
     <div class="p-6">
-      <!-- TABS LOGIN -->
       <div class="flex border-b mb-4">
         <button onclick="showLoginTab('siswa')" id="tab-siswa" class="flex-1 py-2 font-bold text-emerald-600 border-b-2 border-emerald-600">Siswa</button>
         <button onclick="showLoginTab('bendahara')" id="tab-bendahara" class="flex-1 py-2 font-bold text-slate-400">Bendahara</button>
         <button onclick="showLoginTab('wali')" id="tab-wali" class="flex-1 py-2 font-bold text-slate-400">Wali Kelas</button>
       </div>
 
-      <!-- FORM SISWA & BENDAHARA -->
       <div id="form-siswa" class="space-y-3">
         <div>
           <label class="block text-xs font-bold text-slate-500 mb-1">NISN</label>
@@ -482,7 +475,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-500 mb-1">Nomor Absen</label>
-          <input type="number" id="login-absen" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Cth: 18 atau 31">
+          <input type="number" id="login-absen" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Cth: 21">
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-500 mb-1">Nama Lengkap</label>
@@ -491,7 +484,6 @@
         <button onclick="loginSiswa()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg mt-2 hover:bg-emerald-700 transition">Masuk</button>
       </div>
 
-      <!-- FORM WALI KELAS -->
       <div id="form-wali" class="space-y-3 hidden bg-amber-50 p-4 rounded-xl border border-amber-200">
         <p class="text-xs text-amber-700 font-bold mb-1"><i class="fas fa-shield-alt"></i> Akses Khusus Wali Kelas</p>
         <input type="password" id="login-pin" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Masukkan PIN Wali">
@@ -501,7 +493,6 @@
   </div>
 </div>
 
-<!-- APP PAGE -->
 <div id="app-screen" class="hidden min-h-screen">
   <nav class="bg-white shadow-sm sticky top-0 z-40">
     <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
@@ -513,7 +504,6 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Tombol Switch Bendahara/Siswa -->
         <button id="btn-switch-bendahara" onclick="switchRole('bendahara')" class="hidden bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Mode Bendahara</button>
         <button id="btn-mode-siswa" onclick="switchRole('siswa')" class="hidden bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded">Mode Siswa</button>
 
@@ -529,8 +519,6 @@
   <div id="notif-list" class="hidden"></div>
 
   <div class="max-w-4xl mx-auto p-4 space-y-6">
-
-    <!-- VIEW SISWA -->
     <div id="view-siswa" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
         <h2 class="text-sm font-bold text-slate-500 mb-3">Ringkasan Kas Kamu</h2>
@@ -561,7 +549,6 @@
       </div>
     </div>
 
-    <!-- VIEW BENDAHARA -->
     <div id="view-bendahara" class="hidden space-y-4">
       <div class="grid grid-cols-3 gap-2">
         <div class="bg-blue-600 text-white p-3 rounded-xl shadow-sm">
@@ -613,7 +600,6 @@
       </div>
     </div>
 
-    <!-- VIEW WALI KELAS -->
     <div id="view-wali" class="hidden space-y-4">
       <div class="grid grid-cols-3 gap-2">
         <div class="bg-blue-600 text-white p-3 rounded-xl shadow-sm">
@@ -660,7 +646,6 @@
 </div>
 
 <script>
-  // FUNGSI PINDAH TAB LOGIN
   window.showLoginTab = function(tab) {
     document.getElementById('form-siswa').classList.add('hidden');
     document.getElementById('form-wali').classList.add('hidden');
@@ -680,7 +665,6 @@
     }
   }
 
-  // Sinkronisasi Angka Dashboard Wali
   document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
       if(document.getElementById('b-masuk') && document.getElementById('b-masuk').innerText !== "Rp 0") {
