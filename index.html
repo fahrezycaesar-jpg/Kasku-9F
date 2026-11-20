@@ -229,7 +229,7 @@ const NAV = {
 };
 
 /* =========================================================================
-   NOTIFIKASI (SUDAH DIPERBAIKI UNTUK ANDROID)
+   NOTIFIKASI (HIGH PRIORITY UNTUK PWA)
    ========================================================================= */
 function toast(msg, type = "info") {
   const colors = { info:"bg-slate-800", success:"bg-emerald-600", error:"bg-red-600", warning:"bg-amber-500" };
@@ -244,19 +244,23 @@ async function showSystemNotification(title, body) {
   try {
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     
-    // PENTING: Gunakan Service Worker untuk Android (Chrome/Firefox)
+    // Gunakan Service Worker (Wajib untuk Android)
     const reg = await navigator.serviceWorker.ready;
     
     await reg.showNotification(title, {
       body: body,
       icon: "./icon-192.png",
       badge: "./icon-192.png",
-      vibrate: [200, 100, 200],
+      vibrate: [300, 100, 300, 100, 300], // Getar lebih kuat
       tag: "kas-" + Date.now(),
-      renotify: true
+      renotify: true,
+      requireInteraction: true, // Notifikasi tidak hilang sampai diklik
+      silent: false,
+      // Memaksa prioritas tinggi (Banner pop-up di Android)
+      data: { url: "./index.html" }
     });
   } catch (e) { 
-    console.warn("Gagal menampilkan notifikasi sistem:", e); 
+    console.warn("Gagal menampilkan notifikasi:", e); 
   }
 }
 
