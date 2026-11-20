@@ -66,9 +66,10 @@ tailwind.config = {
       </form>
     </div>
 
+    <!-- TEKS PIN SUDAH DIHAPUS, DIGANTI TEKS UMUM -->
     <p class="text-center text-xs text-slate-400 mt-4 leading-relaxed">
-      PIN Wali Kelas awal: <b>130711#$$#</b><br/>
-      Siswa & Bendahara login dengan NISN, Nama, dan Nomor Absen.
+      Silakan login sesuai peran masing-masing.<br/>
+      Hubungi Wali Kelas jika mengalami kendala.
     </p>
   </div>
 </div>
@@ -1550,8 +1551,11 @@ window.bacaSemua = async () => {
 };
 
 function pengaturanPage() {
+  const isWali = S.user.role === "wali"; // Cek apakah yang buka Wali Kelas
+  
   return `
   <div class="space-y-4 fade-in">
+    ${isWali ? `
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
       <h3 class="font-semibold text-sm text-slate-700">⚙️ Pengaturan Kelas</h3>
       <div class="grid grid-cols-2 gap-3">
@@ -1592,6 +1596,7 @@ function pengaturanPage() {
       <input id="cfPin" type="text" placeholder="PIN baru" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
       <button onclick="simpanPin()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-semibold">Ubah PIN</button>
     </div>
+    ` : ""}
 
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
       <h3 class="font-semibold text-sm text-slate-700">🤖 Migrasi Foto Catatan Lama ke PDF (AI)</h3>
@@ -1610,6 +1615,7 @@ function pengaturanPage() {
 }
 
 window.simpanConfig = async () => {
+  if (S.user.role !== "wali") return toast("Hanya Wali Kelas yang bisa mengubah ini!", "error");
   await setDoc(doc(db, "config", "kelas"), {
     ...S.config,
     namaKelas: document.getElementById("cfKelas").value.trim(),
@@ -1624,6 +1630,7 @@ window.simpanConfig = async () => {
 };
 
 window.simpanPin = async () => {
+  if (S.user.role !== "wali") return toast("Hanya Wali Kelas yang bisa mengubah PIN!", "error");
   const pin = document.getElementById("cfPin").value.trim();
   if (pin.length < 4) return toast("PIN minimal 4 karakter", "error");
   await setDoc(doc(db, "config", "kelas"), { pinWali: pin }, { merge: true });
