@@ -21,6 +21,54 @@ tailwind.config = {
   .fade-in { animation: fade .25s ease-out; }
   @keyframes fade { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:none;} }
 </style>
+<!-- ============ CSS STREAK (TAMBAHAN BARU) ============ -->
+<style>
+  .streak-flame {
+    display: inline-block;
+    font-size: 2em;
+    line-height: 1;
+    transform-origin: center bottom;
+    animation: streakFlicker 0.65s ease-in-out infinite alternate;
+    will-change: transform, filter;
+    user-select: none;
+  }
+  @keyframes streakFlicker {
+    0%   { transform: scale(1)    rotate(-2deg) translateY(0); }
+    50%  { transform: scale(1.08) rotate(1deg)  translateY(-2px); }
+    100% { transform: scale(1.13) rotate(-1deg) translateY(-4px); }
+  }
+  .streak-flame.flame-yellow {
+    filter: hue-rotate(30deg) brightness(1.45) saturate(2) drop-shadow(0 0 12px #fbbf24) drop-shadow(0 0 22px #fbbf24);
+  }
+  .streak-flame.flame-red {
+    filter: hue-rotate(-15deg) saturate(1.9) drop-shadow(0 0 12px #ef4444) drop-shadow(0 0 22px #ef4444);
+  }
+  .streak-flame.flame-purple {
+    filter: hue-rotate(240deg) saturate(1.6) drop-shadow(0 0 12px #a855f7) drop-shadow(0 0 22px #a855f7);
+  }
+  .streak-flame.flame-green {
+    filter: hue-rotate(95deg) saturate(1.6) drop-shadow(0 0 12px #22c55e) drop-shadow(0 0 22px #22c55e);
+  }
+  .streak-flame.flame-rainbow {
+    animation: streakFlicker 0.65s ease-in-out infinite alternate, rainbowHue 3s linear infinite;
+  }
+  @keyframes rainbowHue {
+    0%   { filter: hue-rotate(0deg)   drop-shadow(0 0 14px #fbbf24) drop-shadow(0 0 22px #fbbf24); }
+    25%  { filter: hue-rotate(90deg)  drop-shadow(0 0 14px #22c55e) drop-shadow(0 0 22px #22c55e); }
+    50%  { filter: hue-rotate(180deg) drop-shadow(0 0 14px #3b82f6) drop-shadow(0 0 22px #3b82f6); }
+    75%  { filter: hue-rotate(270deg) drop-shadow(0 0 14px #a855f7) drop-shadow(0 0 22px #a855f7); }
+    100% { filter: hue-rotate(360deg) drop-shadow(0 0 14px #ef4444) drop-shadow(0 0 22px #ef4444); }
+  }
+  .streak-flame.flame-dead {
+    animation: none !important;
+    filter: grayscale(1) brightness(0.5) !important;
+    opacity: 0.4;
+  }
+  .streak-flame.flame-none {
+    animation: none !important;
+    filter: grayscale(1) opacity(0.3) !important;
+  }
+</style>
 </head>
 <body class="min-h-screen bg-[#F8FAFC] text-slate-800 antialiased">
 
@@ -210,6 +258,13 @@ function fmtTanggal(s) {
   try { return new Date(s).toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" }); }
   catch { return s; }
 }
+function nextMonday() {
+  const d = new Date();
+  const dow = (d.getDay() + 6) % 7;
+  const add = dow === 0 ? 7 : (7 - dow);
+  d.setDate(d.getDate() + add);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
 
 /* =========================================================================
    STATE
@@ -218,18 +273,19 @@ const S = {
   user: null, page: "dashboard",
   config: { ...DEFAULT_CONFIG },
   siswa: [], pembayaran: [], transaksi: [], pengajuan: [], notif: [],
+  streak: {},   /* TAMBAHAN: cache data streak dari Firestore */
   unsubs: [], chart: null, chart2: null,
   chartPeriod: "bulan", weekOffset: 0, notifInit: false, loginTab: "siswa"
 };
 
 const NAV = {
   siswa:     [["dashboard","Beranda"],["riwayat","Riwayat Saya"],["notif","Notifikasi"]],
-  bendahara: [["dashboard","Beranda"],["bayar","Kelola Kas"],["tunggakan","Tunggakan"],["pengajuan","Pengajuan"],["transaksi","Transaksi"],["notif","Notifikasi"],["pengaturan","Alat & Pengaturan"]],
-  wali:      [["dashboard","Beranda"],["tunggakan","Tunggakan"],["pengajuan","Persetujuan"],["siswa","Siswa"],["bayar","Kelola Kas"],["transaksi","Transaksi"],["notif","Notifikasi"],["pengaturan","Pengaturan"]]
+  bendahara: [["dashboard","Beranda"],["bayar","Kelola Kas"],["tunggakan","Tunggakan"],["pengajuan","Pengajuan"],["transaksi","Transaksi"],["streak","🔥 Streak"],["padam","💀 Padam"],["notif","Notifikasi"],["pengaturan","Alat & Pengaturan"]],
+  wali:      [["dashboard","Beranda"],["tunggakan","Tunggakan"],["pengajuan","Persetujuan"],["siswa","Siswa"],["bayar","Kelola Kas"],["transaksi","Transaksi"],["streak","🔥 Streak"],["padam","💀 Padam"],["notif","Notifikasi"],["pengaturan","Pengaturan"]]
 };
 
 /* =========================================================================
-   NOTIFIKASI (HIGH PRIORITY UNTUK PWA)
+   NOTIFIKASI
    ========================================================================= */
 function toast(msg, type = "info") {
   const colors = { info:"bg-slate-800", success:"bg-emerald-600", error:"bg-red-600", warning:"bg-amber-500" };
@@ -243,25 +299,14 @@ function toast(msg, type = "info") {
 async function showSystemNotification(title, body) {
   try {
     if (!("Notification" in window) || Notification.permission !== "granted") return;
-    
-    // Gunakan Service Worker (Wajib untuk Android)
     const reg = await navigator.serviceWorker.ready;
-    
     await reg.showNotification(title, {
-      body: body,
-      icon: "./icon-192.png",
-      badge: "./icon-192.png",
-      vibrate: [300, 100, 300, 100, 300], // Getar lebih kuat
-      tag: "kas-" + Date.now(),
-      renotify: true,
-      requireInteraction: true, // Notifikasi tidak hilang sampai diklik
-      silent: false,
-      // Memaksa prioritas tinggi (Banner pop-up di Android)
+      body, icon: "./icon-192.png", badge: "./icon-192.png",
+      vibrate: [300, 100, 300, 100, 300],
+      tag: "kas-" + Date.now(), renotify: true, requireInteraction: true, silent: false,
       data: { url: "./index.html" }
     });
-  } catch (e) { 
-    console.warn("Gagal menampilkan notifikasi:", e); 
-  }
+  } catch (e) { console.warn("Gagal menampilkan notifikasi:", e); }
 }
 
 async function mintaIzinNotif() {
@@ -385,37 +430,304 @@ function progressMingguIni() {
 }
 
 /* =========================================================================
-   AUTO NOTIF TUNGGAKAN
+   ================ FITUR STREAK (TAMBAHAN BARU) =================
    ========================================================================= */
-let cekTimer = null;
-function scheduleCekTunggakan() {
-  if (!S.user || S.user.role === "siswa" || !db) return;
-  clearTimeout(cekTimer);
-  cekTimer = setTimeout(cekTunggakan, 2500);
+
+/**
+ * Hitung streak seorang siswa.
+ * Aturan: 1 minggu = Rabu + Jumat. Jika salah satu tidak dibayar dalam minggu tsb
+ * (dan minggu tsb sudah lewat), streak PADAM.
+ *
+ * @param {string} nisn
+ * @param {string|null} forgiveWeek  - weekKey yang diabaikan (untuk "pulihkan")
+ * @returns {{streak:number, dead:boolean, deadWeek:string|null}}
+ */
+function calcStreak(nisn, forgiveWeek = null) {
+  const paid = paidDates(nisn);
+  const override = S.streak[nisn] || {};
+  const base = Number(override.baseStreak || 0);
+
+  let startWeekKey;
+  if (override.resetAt) {
+    startWeekKey = weekKey(new Date(override.resetAt));
+  } else {
+    startWeekKey = weekKey(new Date(S.config.tanggalMulai || TODAY));
+  }
+
+  const currentWeek = weekKey(new Date());
+  let streak = base;
+  let dead = false;
+  let deadWeek = null;
+
+  const cursor = new Date(startWeekKey + "T00:00:00");
+  // guard loop max 5 tahun
+  let guard = 0;
+  while (guard++ < 300) {
+    const wk = weekKey(cursor);
+    if (wk > currentWeek) break;
+
+    if (forgiveWeek && wk === forgiveWeek) {
+      cursor.setDate(cursor.getDate() + 7);
+      continue;
+    }
+
+    const rabu = new Date(cursor);  rabu.setDate(rabu.getDate() + 2);
+    const jumat = new Date(cursor); jumat.setDate(jumat.getDate() + 4);
+    const rabuKey = dateKey(rabu);
+    const jumatKey = dateKey(jumat);
+    const paidR = paid.has(rabuKey);
+    const paidJ = paid.has(jumatKey);
+
+    if (wk === currentWeek) {
+      if (paidR && paidJ) {
+        streak++;
+      } else if (rabuKey < TODAY && !paidR) {
+        dead = true; deadWeek = wk;
+      } else if (jumatKey < TODAY && !paidJ) {
+        dead = true; deadWeek = wk;
+      }
+      // else: minggu berjalan belum gagal → skip (jangan dihitung, jangan diputus)
+    } else {
+      if (paidR && paidJ) {
+        streak++;
+      } else {
+        dead = true; deadWeek = wk;
+        break;
+      }
+    }
+
+    cursor.setDate(cursor.getDate() + 7);
+  }
+
+  return { streak, dead, deadWeek };
 }
 
-async function cekTunggakan() {
-  if (!S.siswa.length) return;
-  const wk = weekKey(new Date());
-  for (const s of S.siswa) {
-    const st = studentStats(s);
-    if (!st.lewatBatas) continue;
-    const logId = `${s.nisn}_${wk}`;
-    try {
-      const snap = await getDoc(doc(db, "logTunggakan", logId));
-      if (snap.exists()) continue;
-      await setDoc(doc(db, "logTunggakan", logId), {
-        nisn: s.nisn, nama: s.nama, weekKey: wk,
-        tunggakan: st.tunggakanCount, nominal: st.tunggakanNominal, waktu: nowISO()
-      });
-      await kirimNotif({
-        target: "wali",
-        judul: "⚠️ Tunggakan Melewati Batas",
-        pesan: `${s.nama} (Absen ${s.absen}) memiliki ${st.tunggakanCount} jadwal tunggakan senilai ${rupiah(st.tunggakanNominal)} — melewati batas ${st.batas} jadwal.`,
-        tipe: "warning"
-      });
-    } catch (e) { console.warn("cek tunggakan", e); }
-  }
+/** Tampilkan emoji api sesuai level streak. */
+function flameEmoji(streak, dead) {
+  if (dead)                    return `<span class="streak-flame flame-dead">🔥</span>`;
+  if (!streak || streak <= 0)  return `<span class="streak-flame flame-none">🔥</span>`;
+  if (streak >= 11)            return `<span class="streak-flame flame-rainbow">🔥</span>`;
+  if (streak >= 9)             return `<span class="streak-flame flame-green">🔥</span>`;
+  if (streak >= 7)             return `<span class="streak-flame flame-purple">🔥</span>`;
+  if (streak >= 4)             return `<span class="streak-flame flame-red">🔥</span>`;
+  return `<span class="streak-flame flame-yellow">🔥</span>`;
+}
+
+function levelLabel(streak, dead) {
+  if (dead) return "PADAM";
+  if (!streak || streak <= 0) return "Belum ada";
+  if (streak >= 11) return "Warni (11+)";
+  if (streak >= 9)  return "Hijau (9-10)";
+  if (streak >= 7)  return "Ungu (7-8)";
+  if (streak >= 4)  return "Merah (4-6)";
+  return "Kuning (1-3)";
+}
+
+/* Halaman Monitor Streak */
+function streakPage() {
+  const all = S.siswa.map(s => ({ s, cur: calcStreak(s.nisn) }))
+    .sort((a, b) => b.cur.streak - a.cur.streak);
+  const aktif  = all.filter(x => !x.cur.dead && x.cur.streak > 0).length;
+  const padam  = all.filter(x => x.cur.dead).length;
+  const top    = all[0];
+
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 rounded-2xl p-4 text-white shadow-sm">
+      <div class="text-lg font-bold">🔥 Monitor Streak Siswa</div>
+      <div class="text-xs opacity-95 mt-1 leading-relaxed">Bayar <b>Rabu & Jumat</b> tiap minggu untuk menjaga api tetap menyala. Mangkir 1x dalam seminggu = api padam.</div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2">
+      <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-emerald-600">${aktif}</div>
+        <div class="text-[10px] text-emerald-700 font-semibold mt-0.5">Api Aktif</div>
+      </div>
+      <div class="bg-gray-100 border border-gray-200 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-gray-600">${padam}</div>
+        <div class="text-[10px] text-gray-700 font-semibold mt-0.5">Api Padam</div>
+      </div>
+      <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+        <div class="text-2xl font-bold text-amber-600">${top?.cur.streak || 0}</div>
+        <div class="text-[10px] text-amber-700 font-semibold mt-0.5">Tertinggi</div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-3">
+      <div class="text-[11px] font-bold text-slate-600 mb-2 uppercase tracking-wide">🎨 Kunci Warna Api</div>
+      <div class="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600">
+        <div class="flex items-center gap-2"><span class="streak-flame flame-yellow" style="font-size:1.2em">🔥</span> 1–3 minggu</div>
+        <div class="flex items-center gap-2"><span class="streak-flame flame-red" style="font-size:1.2em">🔥</span> 4–6 minggu</div>
+        <div class="flex items-center gap-2"><span class="streak-flame flame-purple" style="font-size:1.2em">🔥</span> 7–8 minggu</div>
+        <div class="flex items-center gap-2"><span class="streak-flame flame-green" style="font-size:1.2em">🔥</span> 9–10 minggu</div>
+        <div class="flex items-center gap-2 col-span-2"><span class="streak-flame flame-rainbow" style="font-size:1.2em">🔥</span> 11+ minggu (warni)</div>
+        <div class="flex items-center gap-2 col-span-2"><span class="streak-flame flame-dead" style="font-size:1.2em">🔥</span> Padam (perlu dipulihkan)</div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+      <div class="p-3 flex justify-between text-xs text-slate-500 font-semibold">
+        <span>👥 ${all.length} siswa</span>
+        <span>${aktif} aktif · ${padam} padam</span>
+      </div>
+      ${all.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Memuat data siswa...</div>` :
+        all.map(({ s, cur }) => `
+          <div class="p-3 flex items-center gap-3">
+            <div class="w-12 text-center shrink-0">${flameEmoji(cur.streak, cur.dead)}</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold truncate">${esc(s.nama)}</div>
+              <div class="text-[11px] text-slate-400 truncate">Absen ${esc(s.absen)} · ${cur.dead ? "PADAM" : levelLabel(cur.streak, false)}</div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-xl font-bold ${cur.dead ? "text-gray-400" : "text-orange-600"}">${cur.streak}</div>
+              <div class="text-[10px] text-slate-400">minggu</div>
+            </div>
+          </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+/* Halaman Streak Padam */
+function padamPage() {
+  const dead = S.siswa.map(s => ({ s, cur: calcStreak(s.nisn) }))
+    .filter(x => x.cur.dead)
+    .sort((a, b) => (a.cur.deadWeek || "").localeCompare(b.cur.deadWeek || ""));
+
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="bg-gradient-to-r from-slate-700 to-slate-900 rounded-2xl p-4 text-white shadow-sm">
+      <div class="text-lg font-bold">💀 Streak Padam</div>
+      <div class="text-xs opacity-95 mt-1 leading-relaxed">${dead.length} siswa kehilangan streak. Pilih <b>Pulihkan</b> untuk melanjutkan atau <b>Reset dari 0</b> untuk memulai baru.</div>
+    </div>
+
+    ${dead.length === 0 ? `
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
+        <div class="text-5xl mb-2">✨🔥✨</div>
+        <div class="text-sm font-semibold text-emerald-700">Semua api menyala!</div>
+        <div class="text-xs text-slate-500 mt-1">Tidak ada streak yang padam saat ini.</div>
+      </div>
+    ` : `
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+        ${dead.map(({ s, cur }) => {
+          const forgiven = calcStreak(s.nisn, cur.deadWeek);
+          return `
+          <div class="p-3.5">
+            <div class="flex items-center gap-3">
+              <div class="w-12 text-center shrink-0">${flameEmoji(cur.streak, true)}</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-semibold truncate">${esc(s.nama)}</div>
+                <div class="text-[11px] text-slate-400 truncate">Absen ${esc(s.absen)} · padam sejak minggu ${esc(cur.deadWeek)}</div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-sm font-bold text-gray-500">${cur.streak}</div>
+                <div class="text-[10px] text-slate-400">sebelumnya</div>
+              </div>
+            </div>
+            <div class="mt-2 grid grid-cols-2 gap-2">
+              <button onclick="confirmRestoreStreak('${esc(s.nisn)}')" class="text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg transition">
+                🔥 Pulihkan → ${forgiven.streak}
+              </button>
+              <button onclick="confirmResetStreak('${esc(s.nisn)}')" class="text-[11px] font-bold bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg transition">
+                🔄 Reset dari 0
+              </button>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+    `}
+  </div>`;
+}
+
+/* Aksi Pulihkan Streak */
+window.confirmRestoreStreak = async (nisn) => {
+  if (!["wali","bendahara"].includes(S.user.role)) return toast("Hanya Wali/Bendahara yang bisa memulihkan streak", "error");
+  const s = S.siswa.find(x => x.nisn === nisn);
+  const cur = calcStreak(nisn);
+  if (!cur.dead) return toast("Streak tidak padam", "info");
+  const forgiven = calcStreak(nisn, cur.deadWeek);
+  if (!confirm(`Pulihkan streak ${s.nama}?\n\nNilai akan dipulihkan ke ${forgiven.streak} minggu,\nlalu melanjutkan hitungan dari minggu depan.`)) return;
+
+  try {
+    const nextMon = nextMonday();
+    await setDoc(doc(db, "streak", nisn), {
+      baseStreak: forgiven.streak,
+      resetAt: nextMon.toISOString(),
+      lastAction: {
+        type: "restore", at: nowISO(), by: S.user.nama || S.user.role,
+        value: forgiven.streak, forgivenWeek: cur.deadWeek
+      }
+    }, { merge: true });
+    await kirimNotif({
+      target: "siswa", nisn,
+      judul: "🔥 Streak Kamu Dipulihkan!",
+      pesan: `Api streak-mu sudah kembali menyala dengan ${forgiven.streak} minggu. Lanjutkan dengan bayar Rabu & Jumat ya!`,
+      tipe: "success"
+    });
+    toast("Streak dipulihkan ✅", "success");
+  } catch (e) { toast("Gagal: " + e.message, "error"); }
+};
+
+/* Aksi Reset Streak */
+window.confirmResetStreak = async (nisn) => {
+  if (!["wali","bendahara"].includes(S.user.role)) return toast("Hanya Wali/Bendahara yang bisa reset streak", "error");
+  const s = S.siswa.find(x => x.nisn === nisn);
+  const cur = calcStreak(nisn);
+  if (!cur.dead) return toast("Streak tidak padam", "info");
+  if (!confirm(`Reset streak ${s.nama} dari 0?\n\nStreak sebelumnya (${cur.streak} minggu) akan dihapus dan mulai dari nol.`)) return;
+
+  try {
+    await setDoc(doc(db, "streak", nisn), {
+      baseStreak: 0,
+      resetAt: nowISO(),
+      lastAction: {
+        type: "reset", at: nowISO(), by: S.user.nama || S.user.role,
+        prevValue: cur.streak
+      }
+    }, { merge: true });
+    await kirimNotif({
+      target: "siswa", nisn,
+      judul: "🔄 Streak Direset",
+      pesan: `Streak-mu sudah direset dari 0. Mulai bangun api baru dengan bayar Rabu & Jumat!`,
+      tipe: "info"
+    });
+    toast("Streak direset dari 0 ✅", "success");
+  } catch (e) { toast("Gagal: " + e.message, "error"); }
+};
+
+/* Card Streak untuk Dashboard Siswa */
+function siswaStreakCard(siswaNisn) {
+  const cur = calcStreak(siswaNisn);
+  const bg = cur.dead
+    ? "bg-gradient-to-br from-slate-200 to-slate-300 text-slate-700"
+    : cur.streak >= 11
+      ? "bg-gradient-to-br from-pink-500 via-orange-500 to-yellow-400 text-white"
+      : cur.streak >= 9
+        ? "bg-gradient-to-br from-green-500 to-emerald-600 text-white"
+        : cur.streak >= 7
+          ? "bg-gradient-to-br from-purple-500 to-indigo-600 text-white"
+          : cur.streak >= 4
+            ? "bg-gradient-to-br from-red-500 to-orange-600 text-white"
+            : cur.streak >= 1
+              ? "bg-gradient-to-br from-amber-400 to-orange-500 text-white"
+              : "bg-gradient-to-br from-slate-100 to-slate-200 text-slate-700";
+
+  const sub = cur.dead
+    ? "⚠️ Api padam — hubungi Bendahara / Wali untuk memulihkan"
+    : cur.streak === 0
+      ? "Mulai streak-mu: bayar kas Rabu & Jumat minggu ini!"
+      : `Level: ${levelLabel(cur.streak, false)} · Tetap bayar Rabu & Jumat untuk menjaga api!`;
+
+  return `
+    <div class="${bg} rounded-2xl p-4 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="text-6xl leading-none shrink-0">${flameEmoji(cur.streak, cur.dead)}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] font-medium opacity-90">🔥 Streak Setoran Kamu</div>
+          <div class="text-3xl font-bold leading-tight">${cur.streak} <span class="text-base font-semibold">minggu</span></div>
+          <div class="text-[11px] opacity-90 mt-1 leading-snug">${sub}</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 /* =========================================================================
@@ -532,6 +844,13 @@ function subscribeAll() {
   S.unsubs.push(onSnapshot(collection(db, "pengajuan"), snap => {
     S.pengajuan = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (b.waktu || "").localeCompare(a.waktu || ""));
+    render();
+  }));
+
+  /* TAMBAHAN: subscription koleksi streak */
+  S.unsubs.push(onSnapshot(collection(db, "streak"), snap => {
+    S.streak = {};
+    snap.forEach(d => { S.streak[d.id] = d.data(); });
     render();
   }));
 }
@@ -663,6 +982,9 @@ function pageHTML() {
     case "siswa":      return siswaPage();
     case "notif":      return notifPage();
     case "pengaturan": return pengaturanPage();
+    /* TAMBAHAN: halaman streak */
+    case "streak":     return streakPage();
+    case "padam":      return padamPage();
     default: return "";
   }
 }
@@ -794,6 +1116,9 @@ function siswaDashboard() {
              <div class="text-[11px] opacity-90 mt-1">Batas: ${st.batas} jadwal</div>`}
       </div>
     </div>
+
+    <!-- TAMBAHAN: Card Streak Pribadi -->
+    ${siswaStreakCard(s.nisn)}
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
       ${statCard("Saldo Kas Kelas", rupiah(t.saldo), "Sisa kas saat ini", "brand")}
@@ -1565,7 +1890,7 @@ window.bacaSemua = async () => {
 function pengaturanPage() {
   const isWali = S.user.role === "wali";
   const isBendahara = S.user.role === "bendahara";
-  
+
   return `
   <div class="space-y-4 fade-in">
     ${isWali ? `
@@ -1611,7 +1936,6 @@ function pengaturanPage() {
     </div>
     ` : ""}
 
-    <!-- FITUR MIGRASI AI YANG SUDAH DIPERBARUI -->
     ${(isWali || isBendahara) ? `
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-4">
       <div class="text-center mb-2">
@@ -1620,7 +1944,6 @@ function pengaturanPage() {
         <p class="text-xs text-slate-500 mt-1">Gunakan bantuan ChatGPT atau Gemini untuk membaca foto catatan kas lama.</p>
       </div>
 
-      <!-- 1. Upload File -->
       <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition relative">
         <input type="file" id="aiFile" accept="image/*,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleAiFile(this)">
         <div class="text-slate-500 text-sm">
@@ -1629,7 +1952,6 @@ function pengaturanPage() {
         </div>
       </div>
 
-      <!-- 2. Prompt & Aksi -->
       <div>
         <label class="text-xs font-medium text-slate-500">1. Salin Prompt Ini</label>
         <textarea id="aiPrompt" rows="4" class="w-full mt-1 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-[10px] text-slate-600 leading-relaxed" readonly>${esc(AI_PROMPT)}</textarea>
@@ -1641,7 +1963,6 @@ function pengaturanPage() {
         <a href="https://gemini.google.com/" target="_blank" class="bg-blue-100 text-blue-800 text-center py-2.5 rounded-xl text-xs font-bold block">Buka Gemini ↗</a>
       </div>
 
-      <!-- 3. Tempel Hasil -->
       <div class="border-t border-slate-100 pt-3">
         <label class="text-xs font-medium text-slate-500">2. Tempel Hasil Rekap dari AI (Opsional)</label>
         <textarea id="aiResult" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="Paste hasil rekap dari ChatGPT/Gemini di sini agar tersimpan..."></textarea>
@@ -1659,7 +1980,6 @@ function pengaturanPage() {
   </div>`;
 }
 
-// FUNGSI UNTUK FITUR AI BARU
 window.handleAiFile = (input) => {
   if (input.files && input.files[0]) {
     document.getElementById("aiFileName").textContent = "✅ " + input.files[0].name;
@@ -1670,7 +1990,7 @@ window.handleAiFile = (input) => {
 window.simpanHasilAI = async () => {
   const teks = document.getElementById("aiResult").value.trim();
   if (!teks) return toast("Tempel hasil rekap AI terlebih dahulu", "error");
-  
+
   try {
     await addDoc(collection(db, "catatan_migrasi"), {
       teks, oleh: S.user.nama, waktu: nowISO()
