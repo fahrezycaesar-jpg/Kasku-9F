@@ -38,6 +38,8 @@
 
   const rupiah = (num) => "Rp " + (num || 0).toLocaleString('id-ID');
   const timeNow = () => new Date().toISOString();
+  // FUNGSI PEMBERSIH SPASI & HURUF
+  const cleanStr = (str) => String(str || '').replace(/\s+/g, '').toLowerCase();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -45,7 +47,6 @@
     });
   }
 
-  // DATA 31 SISWA MENGGUNAKAN BAHASA INDONESIA ("nama")
   const defaultSiswa = {
     '1': { id: 1, nisn: '0114066287', absen: 1, nama: 'AFFLAH INTAN NOOR IZZAH', isBendahara: false },
     '2': { id: 2, nisn: '0118692248', absen: 2, nama: 'AHMAD RENO KHOIDOR MAULANA', isBendahara: false },
@@ -125,7 +126,6 @@
     document.getElementById('login-screen').classList.remove('hidden');
   }
 
-  // LOGIN MENGGUNAKAN "nama"
   window.loginSiswa = function() {
     if(students.length === 0) return Swal.fire('Tunggu', 'Data sedang dimuat, coba lagi 2 detik lagi.', 'info');
 
@@ -133,13 +133,24 @@
     const nama = document.getElementById('login-nama').value.trim();
     const absen = parseInt(document.getElementById('login-absen').value);
 
+    // PENCOCOKAN SUPER PINTAR (Hapus semua spasi & abaikan besar-kecil huruf)
     const student = students.find(s => 
-      String(s.nisn).trim() === String(nisn).trim() && 
+      cleanStr(s.nisn) === cleanStr(nisn) && 
       parseInt(s.absen) === parseInt(absen) && 
-      String(s.nama).trim().toLowerCase() === String(nama).trim().toLowerCase()
+      cleanStr(s.nama) === cleanStr(nama)
     );
 
-    if (!student) return Swal.fire('Gagal', 'NISN, Nama, atau Absen salah! Pastikan Nama diketik lengkap.', 'error');
+    if (!student) {
+      // DEBUGGING: Kasih tahu apa yang dibaca sistem
+      const foundAbsen = students.find(s => parseInt(s.absen) === parseInt(absen));
+      let debugMsg = `Yang kamu ketik:<br>NISN: "${nisn}"<br>Nama: "${nama}"<br>Absen: ${absen}<br><br>`;
+      if(foundAbsen) {
+        debugMsg += `Data di sistem (Absen ${absen}):<br>NISN: "${foundAbsen.nisn}"<br>Nama: "${foundAbsen.nama}"`;
+      } else {
+        debugMsg += `Absen ${absen} tidak ditemukan.`;
+      }
+      return Swal.fire({ title: 'Gagal Login', html: debugMsg, icon: 'error' });
+    }
 
     currentUser = student;
     
