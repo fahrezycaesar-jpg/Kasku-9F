@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasku IX F - Online</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+  body { background: #0f172a; color: #e2e8f0; padding-bottom: 70px; }
+  .header { background: #1e293b; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 100; }
+  .header h1 { font-size: 1.2rem; color: #38bdf8; }
+  .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+  .card { background: #1e293b; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #334155; }
+  .card h2 { font-size: 1rem; color: #38bdf8; margin-bottom: 10px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+  .stat { background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; text-align: center; }
+  .stat p { font-size: 0.7rem; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; }
+  .stat h3 { font-size: 1.1rem; color: #4ade80; }
+  .stat h3.red { color: #f87171; }
+  .stat h3.blue { color: #38bdf8; }
+  .btn { display: block; width: 100%; padding: 12px; background: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; text-align: center; }
+  .btn-danger { background: #ef4444; color: white; }
+  input, select { width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; margin-bottom: 10px; }
+  label { font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 5px; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+  .tab { flex: 1; padding: 10px; text-align: center; background: #1e293b; border-radius: 8px; color: #94a3b8; cursor: pointer; font-size: 0.9rem; border: 1px solid #334155; }
+  .tab.active { background: #38bdf8; color: #0f172a; font-weight: bold; border-color: #38bdf8; }
+  .list-item { background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 0.9rem; border-left: 3px solid #38bdf8; }
+  .list-item.bayar { border-left-color: #4ade80; }
+  .hidden { display: none; }
+  .text-muted { color: #94a3b8; font-size: 0.8rem; }
+  #loading { text-align: center; padding: 20px; color: #38bdf8; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Kasku IX F</h1>
+  <span id="user-info" style="font-size: 0.8rem; color: #94a3b8;">Memuat...</span>
+</div>
+
+<div class="container" id="app">
+  <div id="loading">Menghubungkan ke Database Online...</div>
+
+  <!-- TAMPILAN LOGIN -->
+  <div id="view-login" class="hidden">
+    <div class="card">
+      <h2>Login Siswa</h2>
+      <label>NISN (Coba: 0114066287)</label>
+      <input type="text" id="login-nisn" placeholder="Masukkan NISN">
+      <label>Nomor Absen (Coba: 1)</label>
+      <input type="number" id="login-absen" placeholder="Masukkan No Absen">
+      <label>Nama Lengkap</label>
+      <input type="text" id="login-nama" placeholder="Masukkan Nama">
+      <button class="btn" onclick="loginSiswa()">Masuk sebagai Siswa</button>
+    </div>
+    <div class="card" style="text-align: center;">
+      <p class="text-muted">Atau login sebagai:</p>
+      <button class="btn btn-outline" onclick="loginAdmin()" style="background:transparent; border:1px solid #38bdf8; color:#38bdf8; margin-top:5px;">Bendahara (Admin)</button>
+    </div>
+  </div>
+
+  <!-- TAMPILAN DASHBOARD SISWA -->
+  <div id="view-siswa" class="hidden">
+    <div class="stat-grid">
+      <div class="stat"><p>Total Dibayar</p><h3 id="s-total">Rp 0</h3></div>
+      <div class="stat"><p>Tunggakan</p><h3 id="s-tunggakan" class="red">Rp 0</h3></div>
+    </div>
+    <div class="card">
+      <h2>📜 Riwayat Transaksi</h2>
+      <div id="s-riwayat" class="text-muted">Belum ada transaksi.</div>
+    </div>
+    <button class="btn btn-danger" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- TAMPILAN DASHBOARD BENDAHARA -->
+  <div id="view-admin" class="hidden">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+      <div class="tab" onclick="switchTab('input')">Input Kas</div>
+    </div>
+    <div id="tab-dashboard">
+      <div class="stat-grid">
+        <div class="stat"><p>Total Kas Masuk</p><h3 id="a-masuk" class="blue">Rp 0</h3></div>
+        <div class="stat"><p>Saldo Akhir Kas</p><h3 id="a-saldo" class="blue">Rp 0</h3></div>
+      </div>
+      <div class="card">
+        <h2>Riwayat Pembayaran Terbaru</h2>
+        <div id="a-riwayat"></div>
+      </div>
+    </div>
+    <div id="tab-input" class="hidden">
+      <div class="card">
+        <h2>Catat Pembayaran Siswa</h2>
+        <label>Pilih Siswa</label>
+        <select id="input-siswa"></select>
+        <label>Periode</label>
+        <input type="text" id="input-periode" placeholder="Minggu 1 November">
+        <label>Nominal (Rp)</label>
+        <input type="number" id="input-nominal" placeholder="5000">
+        <button class="btn" onclick="simpanKas()">Simpan Pembayaran</button>
+      </div>
+    </div>
+    <button class="btn btn-danger" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  // KUNCI FIREBASE KAMU
+  const firebaseConfig = {
+    apiKey: "AIzaSyB5zD7EJwjkZEvxwH53otiZhKhzRJew5w",
+    authDomain: "kasku-9f.firebaseapp.com",
+    databaseURL: "https://kasku-9f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "kasku-9f",
+    storageBucket: "kasku-9f.firebasestorage.app",
+    messagingSenderId: "677128251717",
+    appId: "1:677128251717:web:a951041c3bc1974a8eb62c"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // DATA 31 SISWA KELAS IX F (Dari PDF)
+  const dataSiswa = [
+    { id: 1, nisn: '0114066287', absen: 1, nama: 'AFFLAH INTAN NOOR IZZAH' },
+    { id: 2, nisn: '0118692248', absen: 2, nama: 'AHMAD RENO KHOIDOR MAULANA' },
+    { id: 3, nisn: '0112942743', absen: 3, nama: 'AMELIA AYU SAFIRA' },
+    { id: 4, nisn: '0111233617', absen: 4, nama: 'ANGGUN KHAIRUNNISA AZZAHRA' },
+    { id: 5, nisn: '0114663158', absen: 5, nama: 'ARIFKI KHOIRUN NIZAR' },
+    { id: 6, nisn: '0114178225', absen: 6, nama: 'ATHALIA WIDYA PRAMESWARI' },
+    { id: 7, nisn: '0101510293', absen: 7, nama: 'AYU NOVTA DIUSTIRA' },
+    { id: 8, nisn: '0118332371', absen: 8, nama: 'BISMA NARENDRA AZKA LAKSANA' },
+    { id: 9, nisn: '0123765617', absen: 9, nama: 'Callista Micheils Nathania' },
+    { id: 10, nisn: '0111981485', absen: 10, nama: 'Cyntha Lailatul Qur\'an' },
+    { id: 11, nisn: '0117824276', absen: 11, nama: 'DEVARA RAKHA ADIWIJAYA' },
+    { id: 12, nisn: '0121520669', absen: 12, nama: 'DHIA AULIA NUR MAKAILA' },
+    { id: 13, nisn: '0117904935', absen: 13, nama: 'Dini Anggraini' },
+    { id: 14, nisn: '0128981655', absen: 14, nama: 'FAIRIS ZALFA HERDIANI' },
+    { id: 15, nisn: '0117365726', absen: 15, nama: 'Firman Maulana Putra' },
+    { id: 16, nisn: '0112989802', absen: 16, nama: 'GHISTA FELIYANA FAJRIN' },
+    { id: 17, nisn: '3113631140', absen: 17, nama: 'IBNU SAWQISYAH' },
+    { id: 18, nisn: '0115475381', absen: 18, nama: 'JULIA PRICILIA TUNGGAL DEWI' },
+    { id: 19, nisn: '0109006940', absen: 19, nama: 'M. RAFY HANIF ASLAM' },
+    { id: 20, nisn: '0118942240', absen: 20, nama: 'MOCH ARIEF RAHMAN HAKIM' },
+    { id: 21, nisn: '3111040608', absen: 21, nama: 'Muhammad Caesar Fahrezy' },
+    { id: 22, nisn: '0119106615', absen: 22, nama: 'MUHAMMAD NAUFAL PUTRA RADITYA' },
+    { id: 23, nisn: '0117067156', absen: 23, nama: 'MUHAMMAD RIZAL TRISANTOSO' },
+    { id: 24, nisn: '0116154718', absen: 24, nama: 'NAFITA DWI LESTARI' },
+    { id: 25, nisn: '0114451725', absen: 25, nama: 'NINDIYA CALLISTA PRIMALIA SARI' },
+    { id: 26, nisn: '0117403868', absen: 26, nama: 'PRADANA RAHADIAN NUGROHO' },
+    { id: 27, nisn: '0128561944', absen: 27, nama: 'Qaniah Shakirah Pulungan' },
+    { id: 28, nisn: '0124246957', absen: 28, nama: 'SATRIO ANDI BRAMANTIO' },
+    { id: 29, nisn: '0111171681', absen: 29, nama: 'Sazkia Aulia Putri' },
+    { id: 30, nisn: '0111158563', absen: 30, nama: 'YANUARTA AINUN NADZAR' },
+    { id: 31, nisn: '0114410744', absen: 31, nama: 'YULIANA NUR CAHYA' }
+  ];
+
+  let userAktif = null;
+  let semuaPembayaran = [];
+
+  const rupiah = (angka) => "Rp " + (angka || 0).toLocaleString('id-ID');
+
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('view-login').classList.remove('hidden');
+  document.getElementById('user-info').innerText = "Belum Login";
+
+  const selectSiswa = document.getElementById('input-siswa');
+  dataSiswa.forEach(s => {
+    selectSiswa.innerHTML += `<option value="${s.id}">${s.absen}. ${s.nama}</option>`;
+  });
+
+  window.loginSiswa = function() {
+    const nisn = document.getElementById('login-nisn').value.trim();
+    const absen = parseInt(document.getElementById('login-absen').value);
+    const nama = document.getElementById('login-nama').value.trim().toUpperCase();
+
+    const siswa = dataSiswa.find(s => s.nisn === nisn);
+    
+    if (!siswa) { alert("NISN kamu salah, coba lihat di rapor atau kartu pelajarmu"); return; }
+    if (siswa.absen !== absen) { alert("Nomor Absen salah!"); return; }
+    if (siswa.nama.toUpperCase() !== nama) { alert("Nama tidak cocok!"); return; }
+
+    userAktif = siswa;
+    document.getElementById('user-info').innerText = "Siswa: " + siswa.nama.split(' ')[0];
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-siswa').classList.remove('hidden');
+    tarikDataOnline(siswa.id);
+  }
+
+  window.loginAdmin = function() {
+    userAktif = { role: 'admin' };
+    document.getElementById('user-info').innerText = "Bendahara";
+    document.getElementById('view-login').classList.add('hidden');
+    document.getElementById('view-admin').classList.remove('hidden');
+    tarikDataOnline(null);
+  }
+
+  window.logout = function() {
+    userAktif = null;
+    document.getElementById('user-info').innerText = "Belum Login";
+    document.getElementById('view-siswa').classList.add('hidden');
+    document.getElementById('view-admin').classList.add('hidden');
+    document.getElementById('view-login').classList.remove('hidden');
+    document.getElementById('login-nisn').value = '';
+    document.getElementById('login-absen').value = '';
+    document.getElementById('login-nama').value = '';
+  }
+
+  window.switchTab = function(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    if (tab === 'dashboard') {
+      document.getElementById('tab-dashboard').classList.remove('hidden');
+      document.getElementById('tab-input').classList.add('hidden');
+      document.querySelectorAll('.tab')[0].classList.add('active');
+    } else {
+      document.getElementById('tab-dashboard').classList.add('hidden');
+      document.getElementById('tab-input').classList.remove('hidden');
+      document.querySelectorAll('.tab')[1].classList.add('active');
+    }
+  }
+
+  function tarikDataOnline(siswaId) {
+    onValue(ref(db, 'pembayaran'), (snapshot) => {
+      semuaPembayaran = [];
+      snapshot.forEach(child => { semuaPembayaran.push({ id: child.key, ...child.val() }); });
+      if (userAktif?.role === 'admin') { renderAdmin(); } else { renderSiswa(siswaId); }
+    });
+  }
+
+  window.simpanKas = function() {
+    const siswaId = parseInt(document.getElementById('input-siswa').value);
+    const periode = document.getElementById('input-periode').value;
+    const nominal = parseInt(document.getElementById('input-nominal').value);
+
+    if (!periode || !nominal) { alert("Isi periode dan nominal!"); return; }
+
+    const newRef = push(ref(db, 'pembayaran'));
+    set(newRef, {
+      siswaId: siswaId,
+      periode: periode,
+      nominal: nominal,
+      tanggal: new Date().toLocaleDateString('id-ID')
+    }).then(() => {
+      alert("Pembayaran berhasil disimpan online!");
+      document.getElementById('input-periode').value = '';
+      document.getElementById('input-nominal').value = '';
+      switchTab('dashboard');
+    }).catch((error) => alert("Gagal simpan: " + error.message));
+  }
+
+  function renderSiswa(siswaId) {
+    let totalBayar = 0;
+    let riwayatHtml = '';
+    const riwayat = semuaPembayaran.filter(p => p.siswaId === siswaId);
+    
+    if (riwayat.length === 0) {
+      riwayatHtml = '<p class="text-muted">Belum ada transaksi.</p>';
+    } else {
+      riwayat.forEach(p => {
+        totalBayar += p.nominal;
+        riwayatHtml += `
+          <div class="list-item bayar">
+            <div><b>${p.periode}</b><br><small class="text-muted">${p.tanggal}</small></div>
+            <div style="text-align:right"><span style="color:#4ade80">${rupiah(p.nominal)}</span><br><small>Lunas</small></div>
+          </div>
+        `;
+      });
+    }
+
+    const target = 50000;
+    const tunggakan = Math.max(0, target - totalBayar);
+
+    document.getElementById('s-total').innerText = rupiah(totalBayar);
+    document.getElementById('s-tunggakan').innerText = rupiah(tunggakan);
+    document.getElementById('s-riwayat').innerHTML = riwayatHtml;
+  }
+
+  function renderAdmin() {
+    let totalMasuk = semuaPembayaran.reduce((sum, p) => sum + p.nominal, 0);
+    document.getElementById('a-masuk').innerText = rupiah(totalMasuk);
+    document.getElementById('a-saldo').innerText = rupiah(totalMasuk);
+
+    let html = '';
+    if (semuaPembayaran.length === 0) {
+      html = '<p class="text-muted">Belum ada data kas masuk.</p>';
+    } else {
+      const sorted = [...semuaPembayaran].reverse();
+      sorted.forEach(p => {
+        const siswa = dataSiswa.find(s => s.id === p.siswaId);
+        html += `
+          <div class="list-item bayar">
+            <div><b>${siswa ? siswa.nama : 'Siswa'}</b><br><small class="text-muted">${p.periode} • ${p.tanggal}</small></div>
+            <div style="color:#4ade80">${rupiah(p.nominal)}</div>
+          </div>
+        `;
+      });
+    }
+    document.getElementById('a-riwayat').innerHTML = html;
+  }
+</script>
+</body>
+</html>
