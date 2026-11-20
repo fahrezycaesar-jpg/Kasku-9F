@@ -21,37 +21,23 @@ tailwind.config = {
   .fade-in { animation: fade .25s ease-out; }
   @keyframes fade { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:none;} }
 </style>
-<!-- ============ CSS STREAK (TAMBAHAN BARU) ============ -->
 <style>
   .streak-flame {
-    display: inline-block;
-    font-size: 2em;
-    line-height: 1;
+    display: inline-block; font-size: 2em; line-height: 1;
     transform-origin: center bottom;
     animation: streakFlicker 0.65s ease-in-out infinite alternate;
-    will-change: transform, filter;
-    user-select: none;
+    will-change: transform, filter; user-select: none;
   }
   @keyframes streakFlicker {
     0%   { transform: scale(1)    rotate(-2deg) translateY(0); }
     50%  { transform: scale(1.08) rotate(1deg)  translateY(-2px); }
     100% { transform: scale(1.13) rotate(-1deg) translateY(-4px); }
   }
-  .streak-flame.flame-yellow {
-    filter: hue-rotate(30deg) brightness(1.45) saturate(2) drop-shadow(0 0 12px #fbbf24) drop-shadow(0 0 22px #fbbf24);
-  }
-  .streak-flame.flame-red {
-    filter: hue-rotate(-15deg) saturate(1.9) drop-shadow(0 0 12px #ef4444) drop-shadow(0 0 22px #ef4444);
-  }
-  .streak-flame.flame-purple {
-    filter: hue-rotate(240deg) saturate(1.6) drop-shadow(0 0 12px #a855f7) drop-shadow(0 0 22px #a855f7);
-  }
-  .streak-flame.flame-green {
-    filter: hue-rotate(95deg) saturate(1.6) drop-shadow(0 0 12px #22c55e) drop-shadow(0 0 22px #22c55e);
-  }
-  .streak-flame.flame-rainbow {
-    animation: streakFlicker 0.65s ease-in-out infinite alternate, rainbowHue 3s linear infinite;
-  }
+  .streak-flame.flame-yellow { filter: hue-rotate(30deg) brightness(1.45) saturate(2) drop-shadow(0 0 12px #fbbf24) drop-shadow(0 0 22px #fbbf24); }
+  .streak-flame.flame-red    { filter: hue-rotate(-15deg) saturate(1.9) drop-shadow(0 0 12px #ef4444) drop-shadow(0 0 22px #ef4444); }
+  .streak-flame.flame-purple { filter: hue-rotate(240deg) saturate(1.6) drop-shadow(0 0 12px #a855f7) drop-shadow(0 0 22px #a855f7); }
+  .streak-flame.flame-green  { filter: hue-rotate(95deg) saturate(1.6) drop-shadow(0 0 12px #22c55e) drop-shadow(0 0 22px #22c55e); }
+  .streak-flame.flame-rainbow { animation: streakFlicker 0.65s ease-in-out infinite alternate, rainbowHue 3s linear infinite; }
   @keyframes rainbowHue {
     0%   { filter: hue-rotate(0deg)   drop-shadow(0 0 14px #fbbf24) drop-shadow(0 0 22px #fbbf24); }
     25%  { filter: hue-rotate(90deg)  drop-shadow(0 0 14px #22c55e) drop-shadow(0 0 22px #22c55e); }
@@ -59,20 +45,12 @@ tailwind.config = {
     75%  { filter: hue-rotate(270deg) drop-shadow(0 0 14px #a855f7) drop-shadow(0 0 22px #a855f7); }
     100% { filter: hue-rotate(360deg) drop-shadow(0 0 14px #ef4444) drop-shadow(0 0 22px #ef4444); }
   }
-  .streak-flame.flame-dead {
-    animation: none !important;
-    filter: grayscale(1) brightness(0.5) !important;
-    opacity: 0.4;
-  }
-  .streak-flame.flame-none {
-    animation: none !important;
-    filter: grayscale(1) opacity(0.3) !important;
-  }
+  .streak-flame.flame-dead { animation: none !important; filter: grayscale(1) brightness(0.5) !important; opacity: 0.4; }
+  .streak-flame.flame-none { animation: none !important; filter: grayscale(1) opacity(0.3) !important; }
 </style>
 </head>
 <body class="min-h-screen bg-[#F8FAFC] text-slate-800 antialiased">
 
-<!-- ================= LOGIN ================= -->
 <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
   <div class="w-full max-w-md">
     <div class="text-center mb-6">
@@ -80,14 +58,12 @@ tailwind.config = {
       <h1 class="text-2xl font-bold text-brand-800">Kas Kelas IX F</h1>
       <p class="text-sm text-slate-500">Pengelolaan Uang Kas Kelas</p>
     </div>
-
     <div class="bg-white rounded-2xl shadow-lg p-5 border border-slate-100">
       <div class="flex bg-slate-100 rounded-xl p-1 mb-4 text-sm font-medium">
         <button data-tab="siswa" class="tab-btn flex-1 py-2 rounded-lg transition">Siswa</button>
         <button data-tab="bendahara" class="tab-btn flex-1 py-2 rounded-lg transition">Bendahara</button>
         <button data-tab="wali" class="tab-btn flex-1 py-2 rounded-lg transition">Wali Kelas</button>
       </div>
-
       <form id="formLogin" class="space-y-3" autocomplete="off">
         <div id="fieldSiswa" class="space-y-3">
           <div>
@@ -103,25 +79,18 @@ tailwind.config = {
             <input id="inAbsen" type="number" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none" placeholder="Contoh: 1" />
           </div>
         </div>
-
         <div id="fieldWali" class="hidden">
           <label class="text-xs font-medium text-slate-500">PIN Keamanan Wali Kelas</label>
           <input id="inPin" type="password" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none" placeholder="••••••••" />
         </div>
-
         <button type="submit" class="w-full bg-brand-700 hover:bg-brand-800 text-white py-3 rounded-xl font-semibold transition">Masuk</button>
         <p id="loginErr" class="text-sm text-red-600 hidden"></p>
       </form>
     </div>
-
-    <p class="text-center text-xs text-slate-400 mt-4 leading-relaxed">
-      Silakan login sesuai peran masing-masing.<br/>
-      Hubungi Wali Kelas jika mengalami kendala.
-    </p>
+    <p class="text-center text-xs text-slate-400 mt-4 leading-relaxed">Silakan login sesuai peran masing-masing.<br/>Hubungi Wali Kelas jika mengalami kendala.</p>
   </div>
 </div>
 
-<!-- ================= APP ================= -->
 <div id="app" class="hidden pb-24">
   <header class="sticky top-0 z-30 bg-brand-800 text-white shadow-md">
     <div class="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
@@ -132,11 +101,8 @@ tailwind.config = {
           <div id="hdrKelas" class="text-[11px] text-emerald-200 leading-tight truncate"></div>
         </div>
       </div>
-
       <div class="ml-auto flex items-center gap-1.5">
-        <button id="btnNotifHp" class="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1.5 rounded-lg transition">
-          🔔 Aktifkan Notif HP
-        </button>
+        <button id="btnNotifHp" class="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1.5 rounded-lg transition">🔔 Aktifkan Notif HP</button>
         <button id="btnBell" class="relative w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center transition">
           <span class="text-lg">🔔</span>
           <span id="badgeNotif" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-[10px] font-bold grid place-items-center">0</span>
@@ -147,7 +113,6 @@ tailwind.config = {
     </div>
     <nav id="nav" class="max-w-5xl mx-auto px-2 pb-2 flex gap-1 overflow-x-auto no-scrollbar"></nav>
   </header>
-
   <main id="view" class="max-w-5xl mx-auto px-3 sm:px-4 py-4"></main>
 </div>
 
@@ -156,9 +121,6 @@ tailwind.config = {
 <div id="toastRoot" class="fixed top-3 left-1/2 -translate-x-1/2 z-[70] space-y-2 w-[92%] max-w-sm"></div>
 
 <script type="module">
-/* =========================================================================
-   KONFIGURASI FIREBASE
-   ========================================================================= */
 const firebaseConfig = {
   apiKey:            "AIzaSyA96aoU5fs_O_DUQH1CVD3s5B9k2Rp6c8k",
   authDomain:        "kas-kelas-9f.firebaseapp.com",
@@ -176,14 +138,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 let db = null;
-if (FIREBASE_READY) {
-  const app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
-}
+if (FIREBASE_READY) { const app = initializeApp(firebaseConfig); db = getFirestore(app); }
 
-/* =========================================================================
-   DATA SISWA KELAS IX F (SEED)
-   ========================================================================= */
 const SEED_SISWA = [
   { absen: 1,  nisn: "0114066287", nama: "AFFLAH INTAN NOOR IZZAH" },
   { absen: 2,  nisn: "0118692248", nama: "AHMAD RENO KHOIDOR MAULANA" },
@@ -218,25 +174,17 @@ const SEED_SISWA = [
   { absen: 31, nisn: "0114410744", nama: "YULIANA NUR CAHYA" }
 ];
 
-/* =========================================================================
-   KONSTANTA & UTIL
-   ========================================================================= */
 const pad = n => String(n).padStart(2, "0");
 const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const rupiah = n => "Rp" + (Number(n) || 0).toLocaleString("id-ID");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const nowISO = () => new Date().toISOString();
-
 const TODAY = dateKey(new Date());
 
 const DEFAULT_CONFIG = {
-  namaKelas: "IX F",
-  tahunAjaran: "2025/2026",
-  kasRabu: 2000,
-  kasJumat: 2000,
-  batasTunggakan: 2,
-  tanggalMulai: TODAY,
-  pinWali: "130711#$$#",
+  namaKelas: "IX F", tahunAjaran: "2025/2026",
+  kasRabu: 2000, kasJumat: 2000, batasTunggakan: 2,
+  tanggalMulai: TODAY, pinWali: "130711#$$#",
   kategori: ["Kebersihan Kelas","Konsumsi Rapat","Alat Tulis","Dekorasi Kelas","Sosial / Duka","Lain-lain"]
 };
 
@@ -266,14 +214,11 @@ function nextMonday() {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-/* =========================================================================
-   STATE
-   ========================================================================= */
 const S = {
   user: null, page: "dashboard",
   config: { ...DEFAULT_CONFIG },
   siswa: [], pembayaran: [], transaksi: [], pengajuan: [], notif: [],
-  streak: {},   /* TAMBAHAN: cache data streak dari Firestore */
+  streak: {},
   unsubs: [], chart: null, chart2: null,
   chartPeriod: "bulan", weekOffset: 0, notifInit: false, loginTab: "siswa"
 };
@@ -284,9 +229,6 @@ const NAV = {
   wali:      [["dashboard","Beranda"],["tunggakan","Tunggakan"],["pengajuan","Persetujuan"],["siswa","Siswa"],["bayar","Kelola Kas"],["transaksi","Transaksi"],["streak","🔥 Streak"],["padam","💀 Padam"],["notif","Notifikasi"],["pengaturan","Pengaturan"]]
 };
 
-/* =========================================================================
-   NOTIFIKASI
-   ========================================================================= */
 function toast(msg, type = "info") {
   const colors = { info:"bg-slate-800", success:"bg-emerald-600", error:"bg-red-600", warning:"bg-amber-500" };
   const el = document.createElement("div");
@@ -333,9 +275,6 @@ function onNewNotif(n) {
   showSystemNotification(n.judul, n.pesan);
 }
 
-/* =========================================================================
-   PERHITUNGAN
-   ========================================================================= */
 function jadwalList() {
   const start = new Date(S.config.tanggalMulai || TODAY);
   const today = new Date();
@@ -429,19 +368,7 @@ function progressMingguIni() {
   return { persen: Math.round((sudah / total) * 100), sudah, total, jadwal: jad };
 }
 
-/* =========================================================================
-   ================ FITUR STREAK (TAMBAHAN BARU) =================
-   ========================================================================= */
-
-/**
- * Hitung streak seorang siswa.
- * Aturan: 1 minggu = Rabu + Jumat. Jika salah satu tidak dibayar dalam minggu tsb
- * (dan minggu tsb sudah lewat), streak PADAM.
- *
- * @param {string} nisn
- * @param {string|null} forgiveWeek  - weekKey yang diabaikan (untuk "pulihkan")
- * @returns {{streak:number, dead:boolean, deadWeek:string|null}}
- */
+/* ============ FITUR STREAK ============ */
 function calcStreak(nisn, forgiveWeek = null) {
   const paid = paidDates(nisn);
   const override = S.streak[nisn] || {};
@@ -460,7 +387,6 @@ function calcStreak(nisn, forgiveWeek = null) {
   let deadWeek = null;
 
   const cursor = new Date(startWeekKey + "T00:00:00");
-  // guard loop max 5 tahun
   let guard = 0;
   while (guard++ < 300) {
     const wk = weekKey(cursor);
@@ -479,21 +405,12 @@ function calcStreak(nisn, forgiveWeek = null) {
     const paidJ = paid.has(jumatKey);
 
     if (wk === currentWeek) {
-      if (paidR && paidJ) {
-        streak++;
-      } else if (rabuKey < TODAY && !paidR) {
-        dead = true; deadWeek = wk;
-      } else if (jumatKey < TODAY && !paidJ) {
-        dead = true; deadWeek = wk;
-      }
-      // else: minggu berjalan belum gagal → skip (jangan dihitung, jangan diputus)
+      if (paidR && paidJ) streak++;
+      else if (rabuKey < TODAY && !paidR) { dead = true; deadWeek = wk; }
+      else if (jumatKey < TODAY && !paidJ) { dead = true; deadWeek = wk; }
     } else {
-      if (paidR && paidJ) {
-        streak++;
-      } else {
-        dead = true; deadWeek = wk;
-        break;
-      }
+      if (paidR && paidJ) streak++;
+      else { dead = true; deadWeek = wk; break; }
     }
 
     cursor.setDate(cursor.getDate() + 7);
@@ -502,7 +419,6 @@ function calcStreak(nisn, forgiveWeek = null) {
   return { streak, dead, deadWeek };
 }
 
-/** Tampilkan emoji api sesuai level streak. */
 function flameEmoji(streak, dead) {
   if (dead)                    return `<span class="streak-flame flame-dead">🔥</span>`;
   if (!streak || streak <= 0)  return `<span class="streak-flame flame-none">🔥</span>`;
@@ -523,7 +439,6 @@ function levelLabel(streak, dead) {
   return "Kuning (1-3)";
 }
 
-/* Halaman Monitor Streak */
 function streakPage() {
   const all = S.siswa.map(s => ({ s, cur: calcStreak(s.nisn) }))
     .sort((a, b) => b.cur.streak - a.cur.streak);
@@ -537,7 +452,6 @@ function streakPage() {
       <div class="text-lg font-bold">🔥 Monitor Streak Siswa</div>
       <div class="text-xs opacity-95 mt-1 leading-relaxed">Bayar <b>Rabu & Jumat</b> tiap minggu untuk menjaga api tetap menyala. Mangkir 1x dalam seminggu = api padam.</div>
     </div>
-
     <div class="grid grid-cols-3 gap-2">
       <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
         <div class="text-2xl font-bold text-emerald-600">${aktif}</div>
@@ -552,7 +466,6 @@ function streakPage() {
         <div class="text-[10px] text-amber-700 font-semibold mt-0.5">Tertinggi</div>
       </div>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-3">
       <div class="text-[11px] font-bold text-slate-600 mb-2 uppercase tracking-wide">🎨 Kunci Warna Api</div>
       <div class="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600">
@@ -564,7 +477,6 @@ function streakPage() {
         <div class="flex items-center gap-2 col-span-2"><span class="streak-flame flame-dead" style="font-size:1.2em">🔥</span> Padam (perlu dipulihkan)</div>
       </div>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
       <div class="p-3 flex justify-between text-xs text-slate-500 font-semibold">
         <span>👥 ${all.length} siswa</span>
@@ -587,7 +499,6 @@ function streakPage() {
   </div>`;
 }
 
-/* Halaman Streak Padam */
 function padamPage() {
   const dead = S.siswa.map(s => ({ s, cur: calcStreak(s.nisn) }))
     .filter(x => x.cur.dead)
@@ -597,9 +508,8 @@ function padamPage() {
   <div class="space-y-4 fade-in">
     <div class="bg-gradient-to-r from-slate-700 to-slate-900 rounded-2xl p-4 text-white shadow-sm">
       <div class="text-lg font-bold">💀 Streak Padam</div>
-      <div class="text-xs opacity-95 mt-1 leading-relaxed">${dead.length} siswa kehilangan streak. Pilih <b>Pulihkan</b> untuk melanjutkan atau <b>Reset dari 0</b> untuk memulai baru.</div>
+      <div class="text-xs opacity-95 mt-1 leading-relaxed">${dead.length} siswa kehilangan streak. <b>Pulihkan</b> = angka dibekukan di nilai terakhir. <b>Reset</b> = mulai dari 0 minggu.</div>
     </div>
-
     ${dead.length === 0 ? `
       <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
         <div class="text-5xl mb-2">✨🔥✨</div>
@@ -608,9 +518,7 @@ function padamPage() {
       </div>
     ` : `
       <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
-        ${dead.map(({ s, cur }) => {
-          const forgiven = calcStreak(s.nisn, cur.deadWeek);
-          return `
+        ${dead.map(({ s, cur }) => `
           <div class="p-3.5">
             <div class="flex items-center gap-3">
               <div class="w-12 text-center shrink-0">${flameEmoji(cur.streak, true)}</div>
@@ -625,60 +533,62 @@ function padamPage() {
             </div>
             <div class="mt-2 grid grid-cols-2 gap-2">
               <button onclick="confirmRestoreStreak('${esc(s.nisn)}')" class="text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg transition">
-                🔥 Pulihkan → ${forgiven.streak}
+                🔥 Pulihkan → ${cur.streak}
               </button>
               <button onclick="confirmResetStreak('${esc(s.nisn)}')" class="text-[11px] font-bold bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg transition">
                 🔄 Reset dari 0
               </button>
             </div>
-          </div>`;
-        }).join("")}
+          </div>
+        `).join("")}
       </div>
     `}
   </div>`;
 }
 
-/* Aksi Pulihkan Streak */
+/* Aksi Pulihkan — DIBEKUKAN DI NILAI TERAKHIR */
 window.confirmRestoreStreak = async (nisn) => {
   if (!["wali","bendahara"].includes(S.user.role)) return toast("Hanya Wali/Bendahara yang bisa memulihkan streak", "error");
   const s = S.siswa.find(x => x.nisn === nisn);
   const cur = calcStreak(nisn);
   if (!cur.dead) return toast("Streak tidak padam", "info");
-  const forgiven = calcStreak(nisn, cur.deadWeek);
-  if (!confirm(`Pulihkan streak ${s.nama}?\n\nNilai akan dipulihkan ke ${forgiven.streak} minggu,\nlalu melanjutkan hitungan dari minggu depan.`)) return;
+  const frozenValue = Number(cur.streak) || 0;
+  if (!confirm(`Pulihkan streak ${s.nama}?\n\nAngka DIBEKUKAN di ${frozenValue} minggu.\nTidak turun, tidak naik otomatis.\n\nHitungan +1 baru mulai minggu depan saat siswa bayar Rabu & Jumat lagi.`)) return;
 
   try {
     const nextMon = nextMonday();
     await setDoc(doc(db, "streak", nisn), {
-      baseStreak: forgiven.streak,
+      baseStreak: frozenValue,
       resetAt: nextMon.toISOString(),
       lastAction: {
         type: "restore", at: nowISO(), by: S.user.nama || S.user.role,
-        value: forgiven.streak, forgivenWeek: cur.deadWeek
+        value: frozenValue, forgivenWeek: cur.deadWeek
       }
     }, { merge: true });
     await kirimNotif({
       target: "siswa", nisn,
       judul: "🔥 Streak Kamu Dipulihkan!",
-      pesan: `Api streak-mu sudah kembali menyala dengan ${forgiven.streak} minggu. Lanjutkan dengan bayar Rabu & Jumat ya!`,
+      pesan: `Api streak-mu menyala kembali dan DIBEKUKAN di ${frozenValue} minggu. Bayar Rabu & Jumat minggu depan untuk lanjut ke ${frozenValue + 1}!`,
       tipe: "success"
     });
-    toast("Streak dipulihkan ✅", "success");
+    toast(`Streak dipulihkan, dibekukan di ${frozenValue} minggu ✅`, "success");
   } catch (e) { toast("Gagal: " + e.message, "error"); }
 };
 
-/* Aksi Reset Streak */
+/* Aksi Reset — MULAI DARI 0, HITUNG BARU MINGGU DEPAN */
 window.confirmResetStreak = async (nisn) => {
   if (!["wali","bendahara"].includes(S.user.role)) return toast("Hanya Wali/Bendahara yang bisa reset streak", "error");
   const s = S.siswa.find(x => x.nisn === nisn);
   const cur = calcStreak(nisn);
   if (!cur.dead) return toast("Streak tidak padam", "info");
-  if (!confirm(`Reset streak ${s.nama} dari 0?\n\nStreak sebelumnya (${cur.streak} minggu) akan dihapus dan mulai dari nol.`)) return;
+  const nextMonStr = nextMonday().toLocaleDateString("id-ID", { weekday: "long", day: "2-digit", month: "short", year: "numeric" });
+  if (!confirm(`Reset streak ${s.nama} dari 0?\n\nAngka kembali ke 0 minggu.\nHitungan BARU dimulai minggu depan (${nextMonStr}).\nSetiap Rabu+Jumat yang dibayar penuh = +1 minggu.`)) return;
 
   try {
+    const nextMon = nextMonday();
     await setDoc(doc(db, "streak", nisn), {
       baseStreak: 0,
-      resetAt: nowISO(),
+      resetAt: nextMon.toISOString(),
       lastAction: {
         type: "reset", at: nowISO(), by: S.user.nama || S.user.role,
         prevValue: cur.streak
@@ -686,15 +596,14 @@ window.confirmResetStreak = async (nisn) => {
     }, { merge: true });
     await kirimNotif({
       target: "siswa", nisn,
-      judul: "🔄 Streak Direset",
-      pesan: `Streak-mu sudah direset dari 0. Mulai bangun api baru dengan bayar Rabu & Jumat!`,
+      judul: "🔄 Streak Direset dari 0",
+      pesan: `Streak-mu kembali ke 0 minggu. Mulai minggu depan, bayar Rabu & Jumat untuk membangun api baru!`,
       tipe: "info"
     });
-    toast("Streak direset dari 0 ✅", "success");
+    toast("Streak direset dari 0 minggu ✅", "success");
   } catch (e) { toast("Gagal: " + e.message, "error"); }
 };
 
-/* Card Streak untuk Dashboard Siswa */
 function siswaStreakCard(siswaNisn) {
   const cur = calcStreak(siswaNisn);
   const bg = cur.dead
@@ -730,9 +639,7 @@ function siswaStreakCard(siswaNisn) {
     </div>`;
 }
 
-/* =========================================================================
-   AUTH
-   ========================================================================= */
+/* ============ AUTH ============ */
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     S.loginTab = btn.dataset.tab;
@@ -753,12 +660,7 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
   e.preventDefault();
   const err = document.getElementById("loginErr");
   err.classList.add("hidden");
-  if (!FIREBASE_READY) {
-    err.textContent = "Konfigurasi Firebase belum diisi.";
-    err.classList.remove("hidden");
-    return;
-  }
-
+  if (!FIREBASE_READY) { err.textContent = "Konfigurasi Firebase belum diisi."; err.classList.remove("hidden"); return; }
   try {
     if (S.loginTab === "wali") {
       const pin = document.getElementById("inPin").value.trim();
@@ -769,27 +671,17 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
       const nama = document.getElementById("inNama").value.trim();
       const absen = document.getElementById("inAbsen").value.trim();
       if (!nisn || !nama || !absen) throw new Error("Semua kolom wajib diisi.");
-
       const snap = await getDoc(doc(db, "siswa", nisn));
       if (!snap.exists()) throw new Error("NISN tidak terdaftar. Tunggu beberapa saat, sistem sedang menyiapkan data.");
       const data = snap.data();
       if (String(data.nama).trim().toLowerCase() !== nama.toLowerCase())
         throw new Error("Nama lengkap tidak cocok dengan NISN tersebut.");
-      if (String(data.absen).trim() !== absen)
-        throw new Error("Nomor absen tidak cocok.");
-
+      if (String(data.absen).trim() !== absen) throw new Error("Nomor absen tidak cocok.");
       if (S.loginTab === "bendahara" && !data.isBendahara)
         throw new Error("Akun ini bukan Bendahara. Silakan masuk lewat tab Siswa.");
-
-      loginAs({
-        role: S.loginTab === "bendahara" ? "bendahara" : "siswa",
-        nisn, nama: data.nama, absen: data.absen
-      });
+      loginAs({ role: S.loginTab === "bendahara" ? "bendahara" : "siswa", nisn, nama: data.nama, absen: data.absen });
     }
-  } catch (ex) {
-    err.textContent = ex.message;
-    err.classList.remove("hidden");
-  }
+  } catch (ex) { err.textContent = ex.message; err.classList.remove("hidden"); }
 });
 
 function loginAs(user) {
@@ -804,16 +696,10 @@ function loginAs(user) {
   toast(`Selamat datang, ${user.nama}`, "success");
 }
 
-document.getElementById("btnLogout").addEventListener("click", () => {
-  localStorage.removeItem("kas_session");
-  location.reload();
-});
+document.getElementById("btnLogout").addEventListener("click", () => { localStorage.removeItem("kas_session"); location.reload(); });
 document.getElementById("btnBell").addEventListener("click", openDrawer);
 document.getElementById("btnNotifHp").addEventListener("click", mintaIzinNotif);
 
-/* =========================================================================
-   SUBSCRIPTIONS
-   ========================================================================= */
 function subscribeAll() {
   S.unsubs.forEach(u => u());
   S.unsubs = [];
@@ -823,31 +709,23 @@ function subscribeAll() {
     else { setDoc(doc(db, "config", "kelas"), DEFAULT_CONFIG); S.config = { ...DEFAULT_CONFIG }; }
     render();
   }));
-
   S.unsubs.push(onSnapshot(collection(db, "siswa"), snap => {
     S.siswa = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     render();
-    scheduleCekTunggakan();
   }));
-
   S.unsubs.push(onSnapshot(collection(db, "pembayaran"), snap => {
     S.pembayaran = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     render();
-    scheduleCekTunggakan();
   }));
-
   S.unsubs.push(onSnapshot(collection(db, "transaksi"), snap => {
     S.transaksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     render();
   }));
-
   S.unsubs.push(onSnapshot(collection(db, "pengajuan"), snap => {
     S.pengajuan = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (b.waktu || "").localeCompare(a.waktu || ""));
     render();
   }));
-
-  /* TAMBAHAN: subscription koleksi streak */
   S.unsubs.push(onSnapshot(collection(db, "streak"), snap => {
     S.streak = {};
     snap.forEach(d => { S.streak[d.id] = d.data(); });
@@ -859,7 +737,6 @@ function subscribeNotif() {
   const targets = S.user.role === "wali" ? ["wali", "all"]
                 : S.user.role === "bendahara" ? ["bendahara", "all"]
                 : ["siswa", "all"];
-
   const q = query(collection(db, "notifikasi"), where("target", "in", targets));
   S.unsubs.push(onSnapshot(q, snap => {
     const list = [];
@@ -872,7 +749,6 @@ function subscribeNotif() {
     });
     list.sort((a, b) => (b.waktu || "").localeCompare(a.waktu || ""));
     S.notif = list;
-
     if (S.notifInit) {
       snap.docChanges().forEach(ch => {
         if (ch.type !== "added") return;
@@ -882,14 +758,12 @@ function subscribeNotif() {
         if (!n.dibaca) onNewNotif(n);
       });
     } else S.notifInit = true;
-
     renderBell();
     if (S.page === "notif") render();
   }));
 }
 
 function unreadCount() { return S.notif.filter(n => !n.dibaca).length; }
-
 function renderBell() {
   const b = document.getElementById("badgeNotif");
   const c = unreadCount();
@@ -897,20 +771,14 @@ function renderBell() {
   b.classList.toggle("hidden", c === 0);
 }
 
-/* =========================================================================
-   RENDER
-   ========================================================================= */
 function render() {
   if (!S.user) return;
   if (document.getElementById("modalRoot").dataset.open === "1") return;
-
   document.getElementById("hdrKelas").textContent = `${S.config.namaKelas} • ${S.config.tahunAjaran}`;
-
   const roleLabel = { siswa: "Siswa", bendahara: "Bendahara", wali: "Wali Kelas" }[S.user.role];
   document.getElementById("userChip").innerHTML =
     `<div class="text-[11px] text-emerald-200">${esc(roleLabel)}</div>
      <div class="text-xs font-semibold truncate max-w-[130px]">${esc(S.user.nama)}</div>`;
-
   const nav = document.getElementById("nav");
   nav.innerHTML = (NAV[S.user.role] || []).map(([p, label]) => `
     <button onclick="go('${p}')"
@@ -918,11 +786,9 @@ function render() {
       ${S.page === p ? "bg-white text-brand-800" : "bg-white/10 text-white hover:bg-white/20"}">
       ${label}
     </button>`).join("");
-
   document.getElementById("view").innerHTML = pageHTML();
   document.getElementById("btnNotifHp").classList.toggle("hidden",
     !("Notification" in window) || Notification.permission === "granted");
-
   afterRender();
   renderBell();
 }
@@ -937,14 +803,8 @@ function afterRender() {
     S.chart = new Chart(c1, {
       type: "bar",
       data: { labels, datasets: [{ label: "Pengeluaran", data: values, backgroundColor: "#059669", borderRadius: 8, maxBarThickness: 40 }] },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, ticks: { callback: v => "Rp" + Number(v).toLocaleString("id-ID") }, grid: { color: "#f1f5f9" } },
-          x: { grid: { display: false } }
-        }
-      }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => "Rp" + Number(v).toLocaleString("id-ID") }, grid: { color: "#f1f5f9" } }, x: { grid: { display: false } } } }
     });
   }
   const c2 = document.getElementById("chartKategori");
@@ -953,24 +813,15 @@ function afterRender() {
     const map = pengeluaranPerKategori();
     S.chart2 = new Chart(c2, {
       type: "doughnut",
-      data: {
-        labels: Object.keys(map).length ? Object.keys(map) : ["Belum ada pengeluaran"],
-        datasets: [{
-          data: Object.values(map).length ? Object.values(map) : [1],
-          backgroundColor: ["#059669","#0ea5e9","#f59e0b","#ef4444","#8b5cf6","#64748b","#14b8a6"],
-          borderWidth: 0
-        }]
-      },
+      data: { labels: Object.keys(map).length ? Object.keys(map) : ["Belum ada pengeluaran"],
+        datasets: [{ data: Object.values(map).length ? Object.values(map) : [1],
+          backgroundColor: ["#059669","#0ea5e9","#f59e0b","#ef4444","#8b5cf6","#64748b","#14b8a6"], borderWidth: 0 }] },
       options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } } } }
     });
   }
 }
-
 window.setChartPeriod = (p) => { S.chartPeriod = p; render(); };
 
-/* =========================================================================
-   HALAMAN
-   ========================================================================= */
 function pageHTML() {
   switch (S.page) {
     case "dashboard":  return S.user.role === "siswa" ? siswaDashboard() : pengurusDashboard();
@@ -982,7 +833,6 @@ function pageHTML() {
     case "siswa":      return siswaPage();
     case "notif":      return notifPage();
     case "pengaturan": return pengaturanPage();
-    /* TAMBAHAN: halaman streak */
     case "streak":     return streakPage();
     case "padam":      return padamPage();
     default: return "";
@@ -990,13 +840,10 @@ function pageHTML() {
 }
 
 function statCard(label, value, sub, color = "brand") {
-  const map = {
-    brand:"from-emerald-600 to-emerald-700", green:"from-green-500 to-emerald-600",
+  const map = { brand:"from-emerald-600 to-emerald-700", green:"from-green-500 to-emerald-600",
     red:"from-rose-500 to-red-600", amber:"from-amber-400 to-orange-500",
-    slate:"from-slate-600 to-slate-700", sky:"from-sky-500 to-blue-600"
-  };
-  return `
-  <div class="rounded-2xl p-4 text-white bg-gradient-to-br ${map[color] || map.brand} shadow-sm">
+    slate:"from-slate-600 to-slate-700", sky:"from-sky-500 to-blue-600" };
+  return `<div class="rounded-2xl p-4 text-white bg-gradient-to-br ${map[color] || map.brand} shadow-sm">
     <div class="text-[11px] font-medium opacity-90">${esc(label)}</div>
     <div class="text-lg sm:text-xl font-bold mt-1 leading-tight">${value}</div>
     ${sub ? `<div class="text-[11px] opacity-80 mt-1">${sub}</div>` : ""}
@@ -1020,14 +867,12 @@ function pengurusDashboard() {
         <div class="flex-1 text-sm"><b>${pending.length} pengajuan</b> penggunaan uang kas menunggu persetujuan Anda.</div>
         <button onclick="go('pengajuan')" class="text-xs font-bold bg-amber-500 text-white px-3 py-1.5 rounded-lg">Tinjau</button>
       </div>` : ""}
-
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
       ${statCard("Total Saldo Kas", rupiah(t.saldo), "Saldo tersedia", "brand")}
       ${statCard("Total Pemasukan", rupiah(t.masuk), "Kas + pemasukan lain", "green")}
       ${statCard("Total Pengeluaran", rupiah(t.keluar), "Hanya yang disetujui", "red")}
       ${statCard("Total Tunggakan", rupiah(totalTunggakan), `${lewat.length} siswa lewat batas`, "amber")}
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
       <div class="flex items-center justify-between mb-3">
         <h3 class="font-semibold text-sm text-slate-700">📊 Progres Kas Minggu Ini</h3>
@@ -1041,7 +886,6 @@ function pengurusDashboard() {
         <span>${prog.jadwal.map(j => `${j.hari} (${j.tanggal.slice(8)}/${j.tanggal.slice(5,7)})`).join(" • ") || "Belum ada jadwal"}</span>
       </div>
     </div>
-
     <div class="grid grid-cols-2 gap-3">
       <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
         <div class="text-2xl font-bold text-red-600">${lewat.length}</div>
@@ -1052,7 +896,6 @@ function pengurusDashboard() {
         <div class="text-xs text-amber-700 font-medium mt-1">Belum Melewati Batas</div>
       </div>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
         <h3 class="font-semibold text-sm text-slate-700">📈 Grafik Pengeluaran</h3>
@@ -1066,7 +909,6 @@ function pengurusDashboard() {
       </div>
       <div class="h-52"><canvas id="chartKeluar"></canvas></div>
     </div>
-
     <div class="grid md:grid-cols-2 gap-4">
       <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
         <h3 class="font-semibold text-sm text-slate-700 mb-3">🍩 Pengeluaran per Kategori</h3>
@@ -1083,9 +925,7 @@ function pengurusDashboard() {
             <div><b class="text-emerald-800">Jumat</b><div class="text-xs text-emerald-600">Setiap minggu</div></div>
             <b class="text-emerald-800">${rupiah(S.config.kasJumat)}</b>
           </div>
-          <div class="text-xs text-slate-500 pt-1">
-            Batas tunggakan: <b>${S.config.batasTunggakan} jadwal</b> ≈ ${rupiah(S.config.batasTunggakan * S.config.kasRabu)}
-          </div>
+          <div class="text-xs text-slate-500 pt-1">Batas tunggakan: <b>${S.config.batasTunggakan} jadwal</b> ≈ ${rupiah(S.config.batasTunggakan * S.config.kasRabu)}</div>
         </div>
       </div>
     </div>
@@ -1100,14 +940,12 @@ function siswaDashboard() {
   const kat = pengeluaranPerKategori();
   const totalKat = Object.values(kat).reduce((a, b) => a + b, 0);
   const prog = progressMingguIni();
-
   return `
   <div class="space-y-4 fade-in">
     <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-5 text-white shadow-sm">
       <div class="text-xs opacity-90">Halo,</div>
       <div class="text-xl font-bold">${esc(s.nama)}</div>
       <div class="text-xs opacity-90 mt-1">Absen ${esc(s.absen)} • NISN ${esc(s.nisn)}</div>
-
       <div class="mt-4 p-3 rounded-xl ${st.lewatBatas ? "bg-red-500/30 border border-red-300" : st.tunggakanCount > 0 ? "bg-amber-400/30 border border-amber-300" : "bg-emerald-500/30 border border-emerald-300"}">
         ${st.tunggakanCount === 0
           ? `<div class="font-semibold">✅ Lunas! Tidak ada tunggakan.</div>`
@@ -1116,17 +954,13 @@ function siswaDashboard() {
              <div class="text-[11px] opacity-90 mt-1">Batas: ${st.batas} jadwal</div>`}
       </div>
     </div>
-
-    <!-- TAMBAHAN: Card Streak Pribadi -->
     ${siswaStreakCard(s.nisn)}
-
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
       ${statCard("Saldo Kas Kelas", rupiah(t.saldo), "Sisa kas saat ini", "brand")}
       ${statCard("Total Pemasukan", rupiah(t.masuk), "Seluruh kas masuk", "green")}
       ${statCard("Total Pengeluaran", rupiah(t.keluar), "Yang disetujui", "red")}
       ${statCard("Tunggakan Saya", rupiah(st.tunggakanNominal), `${st.tunggakanCount} jadwal`, st.lewatBatas ? "red" : "amber")}
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
       <h3 class="font-semibold text-sm text-slate-700 mb-3">📊 Progres Kas Minggu Ini</h3>
       <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
@@ -1134,21 +968,13 @@ function siswaDashboard() {
       </div>
       <div class="text-[11px] text-slate-500 mt-2">${prog.persen}% pembayaran kelas minggu ini sudah masuk.</div>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
       <h3 class="font-semibold text-sm text-slate-700 mb-3">🗓️ Jadwal Kas Rutin</h3>
       <div class="grid grid-cols-2 gap-2">
-        <div class="p-3 rounded-xl bg-emerald-50 text-center">
-          <div class="font-bold text-emerald-800">Rabu</div>
-          <div class="text-sm text-emerald-700">${rupiah(S.config.kasRabu)}</div>
-        </div>
-        <div class="p-3 rounded-xl bg-emerald-50 text-center">
-          <div class="font-bold text-emerald-800">Jumat</div>
-          <div class="text-sm text-emerald-700">${rupiah(S.config.kasJumat)}</div>
-        </div>
+        <div class="p-3 rounded-xl bg-emerald-50 text-center"><div class="font-bold text-emerald-800">Rabu</div><div class="text-sm text-emerald-700">${rupiah(S.config.kasRabu)}</div></div>
+        <div class="p-3 rounded-xl bg-emerald-50 text-center"><div class="font-bold text-emerald-800">Jumat</div><div class="text-sm text-emerald-700">${rupiah(S.config.kasJumat)}</div></div>
       </div>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
       <h3 class="font-semibold text-sm text-slate-700 mb-3">💸 Uang Kas Digunakan Untuk Apa Aja</h3>
       ${Object.keys(kat).length === 0
@@ -1157,18 +983,12 @@ function siswaDashboard() {
             ${Object.entries(kat).sort((a, b) => b[1] - a[1]).map(([k, v]) => {
               const pct = totalKat ? Math.round((v / totalKat) * 100) : 0;
               return `<div>
-                <div class="flex justify-between text-xs mb-1">
-                  <span class="font-medium text-slate-700">${esc(k)}</span>
-                  <span class="text-slate-500">${rupiah(v)} • ${pct}%</span>
-                </div>
-                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-emerald-500 rounded-full" style="width:${pct}%"></div>
-                </div>
+                <div class="flex justify-between text-xs mb-1"><span class="font-medium text-slate-700">${esc(k)}</span><span class="text-slate-500">${rupiah(v)} • ${pct}%</span></div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 rounded-full" style="width:${pct}%"></div></div>
               </div>`;
             }).join("")}
            </div>`}
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
       <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
         <h3 class="font-semibold text-sm text-slate-700">📈 Grafik Pengeluaran</h3>
@@ -1182,7 +1002,6 @@ function siswaDashboard() {
       </div>
       <div class="h-52"><canvas id="chartKeluar"></canvas></div>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
       <h3 class="font-semibold text-sm text-slate-700 mb-3">🧾 Tunggakan Saya</h3>
       ${st.unpaid.length === 0
@@ -1201,7 +1020,6 @@ function siswaDashboard() {
 function riwayatSiswa() {
   const mine = S.pembayaran.filter(p => p.nisn === S.user.nisn).sort((a, b) => (b.tanggal || "").localeCompare(a.tanggal || ""));
   const total = mine.reduce((a, p) => a + Number(p.nominal || 0), 0);
-
   return `
   <div class="space-y-4 fade-in">
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
@@ -1209,7 +1027,6 @@ function riwayatSiswa() {
       <div class="text-2xl font-bold text-brand-800">${rupiah(total)}</div>
       <div class="text-xs text-slate-500 mt-1">${mine.length} kali setoran tercatat</div>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
       <div class="p-4 font-semibold text-sm text-slate-700">🧾 Riwayat Setoran Pribadi</div>
       ${mine.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada setoran tercatat.</div>` :
@@ -1240,10 +1057,8 @@ function kelolaKasPage() {
   const rabuKey = dateKey(w.rabu), jumatKey = dateKey(w.jumat);
   const rabuNum = Number(S.config.kasRabu), jumatNum = Number(S.config.kasJumat);
   const siswa = [...S.siswa].sort((a, b) => (a.absen || 0) - (b.absen || 0));
-
   const lunasRabu = siswa.filter(s => paidDates(s.nisn).has(rabuKey)).length;
   const lunasJumat = siswa.filter(s => paidDates(s.nisn).has(jumatKey)).length;
-
   return `
   <div class="space-y-4 fade-in">
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
@@ -1270,7 +1085,6 @@ function kelolaKasPage() {
         <button onclick="openBulkNotif()" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold py-2.5 rounded-xl transition">📢 Notifikasi Massal</button>
       </div>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div class="p-4 border-b border-slate-50 flex items-center justify-between">
         <h3 class="font-semibold text-sm text-slate-700">💳 Status Pembayaran Siswa</h3>
@@ -1288,14 +1102,8 @@ function kelolaKasPage() {
                 <div class="text-sm font-medium truncate">${esc(s.nama)} ${s.isBendahara ? `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">Bendahara</span>` : ""}</div>
                 <div class="text-[11px] text-slate-400 truncate">${esc(s.nisn)}</div>
               </div>
-              <button onclick="toggleBayar('${esc(s.nisn)}','${rabuKey}','Rabu')"
-                class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition ${pRabu ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}">
-                Rabu ${pRabu ? "✓" : ""}
-              </button>
-              <button onclick="toggleBayar('${esc(s.nisn)}','${jumatKey}','Jumat')"
-                class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition ${pJumat ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}">
-                Jumat ${pJumat ? "✓" : ""}
-              </button>
+              <button onclick="toggleBayar('${esc(s.nisn)}','${rabuKey}','Rabu')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition ${pRabu ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}">Rabu ${pRabu ? "✓" : ""}</button>
+              <button onclick="toggleBayar('${esc(s.nisn)}','${jumatKey}','Jumat')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition ${pJumat ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}">Jumat ${pJumat ? "✓" : ""}</button>
             </div>`;
           }).join("")}
       </div>
@@ -1310,10 +1118,8 @@ window.toggleBayar = async (nisn, tanggal, hari) => {
     const id = `${nisn}_${tanggal}`;
     const ref = doc(db, "pembayaran", id);
     const snap = await getDoc(ref);
-    if (snap.exists()) {
-      await deleteDoc(ref);
-      toast("Pembayaran dibatalkan", "info");
-    } else {
+    if (snap.exists()) { await deleteDoc(ref); toast("Pembayaran dibatalkan", "info"); }
+    else {
       const s = S.siswa.find(x => x.nisn === nisn);
       await setDoc(ref, {
         nisn, nama: s?.nama || "", tanggal, hari,
@@ -1329,7 +1135,6 @@ window.openQuickAdd = () => {
   const opts = [...S.siswa].sort((a, b) => (a.absen||0)-(b.absen||0))
     .map(s => `<option value="${esc(s.nisn)}">${esc(s.absen)}. ${esc(s.nama)}</option>`).join("");
   const nominals = [2000, 4000, 5000, 10000, 50000, 100000];
-
   openModal("⚡ Tambah Nominal Cepat / Saldo Awal", `
     <div class="space-y-3">
       <div>
@@ -1361,7 +1166,6 @@ window.submitQuickAdd = async () => {
     const nominal = Number(document.getElementById("qaNominal").value);
     const ket = document.getElementById("qaKet").value.trim() || "Pemasukan cepat";
     if (!nominal || nominal <= 0) return toast("Nominal tidak valid", "error");
-
     if (target) {
       const s = S.siswa.find(x => x.nisn === target);
       const tgl = dateKey(new Date());
@@ -1395,20 +1199,12 @@ function tunggakanPage() {
   const lewat = data.filter(x => x.st.lewatBatas);
   const belum = data.filter(x => !x.st.lewatBatas);
   const shown = tFilter === "lewat" ? lewat : tFilter === "belum" ? belum : data;
-
   return `
   <div class="space-y-4 fade-in">
     <div class="grid grid-cols-2 gap-3">
-      <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
-        <div class="text-2xl font-bold text-red-600">${lewat.length}</div>
-        <div class="text-xs text-red-700 font-medium mt-1">Melewati Batas</div>
-      </div>
-      <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4">
-        <div class="text-2xl font-bold text-amber-600">${belum.length}</div>
-        <div class="text-xs text-amber-700 font-medium mt-1">Belum Melewati Batas</div>
-      </div>
+      <div class="bg-red-50 border border-red-100 rounded-2xl p-4"><div class="text-2xl font-bold text-red-600">${lewat.length}</div><div class="text-xs text-red-700 font-medium mt-1">Melewati Batas</div></div>
+      <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4"><div class="text-2xl font-bold text-amber-600">${belum.length}</div><div class="text-xs text-amber-700 font-medium mt-1">Belum Melewati Batas</div></div>
     </div>
-
     <div class="flex gap-2 overflow-x-auto no-scrollbar text-xs font-semibold">
       ${[["semua","Semua Penunggak"],["lewat","Melewati Batas"],["belum","Belum Melewati Batas"]].map(([k, l]) => `
         <button onclick="setTFilter('${k}')"
@@ -1416,7 +1212,6 @@ function tunggakanPage() {
           ${l}
         </button>`).join("")}
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
       <div class="p-4 flex items-center justify-between">
         <h3 class="font-semibold text-sm text-slate-700">⚠️ Daftar Penunggak</h3>
@@ -1431,9 +1226,7 @@ function tunggakanPage() {
               <div class="text-sm font-semibold truncate">${esc(s.nama)}</div>
               <div class="text-[11px] text-slate-400">${st.tunggakanCount} jadwal • ${rupiah(st.tunggakanNominal)}</div>
             </div>
-            <span class="text-[10px] font-bold px-2 py-1 rounded-full ${st.lewatBatas ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}">
-              ${st.lewatBatas ? "MELEWATI BATAS" : "DALAM BATAS"}
-            </span>
+            <span class="text-[10px] font-bold px-2 py-1 rounded-full ${st.lewatBatas ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}">${st.lewatBatas ? "MELEWATI BATAS" : "DALAM BATAS"}</span>
           </div>
           <div class="mt-2 flex gap-2">
             <button onclick="openKirimNotif('${esc(s.nisn)}')" class="flex-1 text-[11px] font-bold bg-brand-700 text-white py-1.5 rounded-lg">🔔 Kirim Notifikasi</button>
@@ -1471,7 +1264,7 @@ window.openKirimNotif = (nisn) => {
       <div>
         <label class="text-xs font-medium text-slate-500">Template siap pakai</label>
         <div class="space-y-1.5 mt-1">
-          ${TEMPLATES.map((t, i) => `
+          ${TEMPLATES.map(t => `
             <button type="button" onclick="document.getElementById('notifPesan').value=this.dataset.t"
               data-t="${esc(t.replace(/\[Nama\]/g, s.nama))}"
               class="w-full text-left text-xs p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 transition">
@@ -1520,29 +1313,19 @@ function pengajuanPage() {
   const list = S.pengajuan;
   const pending = list.filter(p => p.status === "menunggu");
   const done = list.filter(p => p.status !== "menunggu");
-
   return `
   <div class="space-y-4 fade-in">
     ${S.user.role === "bendahara" ? `
-      <button onclick="openFormPengajuan()" class="w-full bg-brand-700 hover:bg-brand-800 text-white py-3 rounded-xl font-semibold transition">
-        ➕ Ajukan Penggunaan Uang Kas
-      </button>` : ""}
-
+      <button onclick="openFormPengajuan()" class="w-full bg-brand-700 hover:bg-brand-800 text-white py-3 rounded-xl font-semibold transition">➕ Ajukan Penggunaan Uang Kas</button>` : ""}
     ${S.user.role === "wali" && pending.length ? `
-      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm">
-        <b>${pending.length} pengajuan</b> menunggu keputusan Anda.
-      </div>` : ""}
-
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm"><b>${pending.length} pengajuan</b> menunggu keputusan Anda.</div>` : ""}
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
       <div class="p-4 font-semibold text-sm text-slate-700">📥 Menunggu Persetujuan (${pending.length})</div>
-      ${pending.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Tidak ada pengajuan menunggu.</div>` :
-        pending.map(p => pengajuanCard(p, true)).join("")}
+      ${pending.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Tidak ada pengajuan menunggu.</div>` : pending.map(p => pengajuanCard(p, true)).join("")}
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
       <div class="p-4 font-semibold text-sm text-slate-700">📁 Riwayat Keputusan</div>
-      ${done.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada riwayat.</div>` :
-        done.map(p => pengajuanCard(p, false)).join("")}
+      ${done.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada riwayat.</div>` : done.map(p => pengajuanCard(p, false)).join("")}
     </div>
   </div>`;
 }
@@ -1553,7 +1336,6 @@ function pengajuanCard(p, isPending) {
     : p.status === "ditolak"
     ? `<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-red-100 text-red-700">DITOLAK</span>`
     : `<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">MENUNGGU</span>`;
-
   return `
   <div class="p-4 space-y-2">
     <div class="flex items-start justify-between gap-2">
@@ -1578,22 +1360,10 @@ window.openFormPengajuan = () => {
   const kat = (S.config.kategori || []).map(k => `<option>${esc(k)}</option>`).join("");
   openModal("➕ Pengajuan Penggunaan Uang Kas", `
     <div class="space-y-3">
-      <div>
-        <label class="text-xs font-medium text-slate-500">Nominal</label>
-        <input id="pjNominal" type="number" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" placeholder="cth: 25000" />
-      </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Kategori Tujuan</label>
-        <select id="pjKategori" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200">${kat}</select>
-      </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Tanggal Pakai</label>
-        <input id="pjTanggal" type="date" value="${dateKey(new Date())}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
-      </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Keterangan</label>
-        <textarea id="pjKet" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="Rincian penggunaan..."></textarea>
-      </div>
+      <div><label class="text-xs font-medium text-slate-500">Nominal</label><input id="pjNominal" type="number" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" placeholder="cth: 25000" /></div>
+      <div><label class="text-xs font-medium text-slate-500">Kategori Tujuan</label><select id="pjKategori" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200">${kat}</select></div>
+      <div><label class="text-xs font-medium text-slate-500">Tanggal Pakai</label><input id="pjTanggal" type="date" value="${dateKey(new Date())}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" /></div>
+      <div><label class="text-xs font-medium text-slate-500">Keterangan</label><textarea id="pjKet" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="Rincian penggunaan..."></textarea></div>
       <button onclick="submitPengajuan()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Kirim Pengajuan</button>
     </div>
   `);
@@ -1606,19 +1376,9 @@ window.submitPengajuan = async () => {
     const tanggalPakai = document.getElementById("pjTanggal").value;
     const keterangan = document.getElementById("pjKet").value.trim();
     if (!nominal || nominal <= 0) return toast("Nominal tidak valid", "error");
-
-    await addDoc(collection(db, "pengajuan"), {
-      nominal, kategori, tanggalPakai, keterangan,
-      status: "menunggu", oleh: S.user.nama, waktu: nowISO()
-    });
-
-    await kirimNotif({
-      target: "wali",
-      judul: "📥 Pengajuan Penggunaan Kas Baru",
-      pesan: `Bendahara ${S.user.nama} mengajukan ${rupiah(nominal)} untuk "${kategori}". ${keterangan ? "Ket: " + keterangan : ""}`,
-      tipe: "warning"
-    });
-
+    await addDoc(collection(db, "pengajuan"), { nominal, kategori, tanggalPakai, keterangan, status: "menunggu", oleh: S.user.nama, waktu: nowISO() });
+    await kirimNotif({ target: "wali", judul: "📥 Pengajuan Penggunaan Kas Baru",
+      pesan: `Bendahara ${S.user.nama} mengajukan ${rupiah(nominal)} untuk "${kategori}". ${keterangan ? "Ket: " + keterangan : ""}`, tipe: "warning" });
     toast("Pengajuan terkirim ke Wali Kelas ✅", "success");
     closeModal();
   } catch (e) { toast("Gagal: " + e.message, "error"); }
@@ -1636,14 +1396,8 @@ window.openTolak = (id) => {
 window.putuskanPengajuan = async (id, status) => {
   try {
     const p = S.pengajuan.find(x => x.id === id);
-    const catatanWali = status === "ditolak"
-      ? (document.getElementById("tolakCatatan")?.value.trim() || "Tidak ada catatan.")
-      : "";
-
-    await updateDoc(doc(db, "pengajuan", id), {
-      status, catatanWali, diputuskanOleh: S.user.nama, waktuKeputusan: nowISO()
-    });
-
+    const catatanWali = status === "ditolak" ? (document.getElementById("tolakCatatan")?.value.trim() || "Tidak ada catatan.") : "";
+    await updateDoc(doc(db, "pengajuan", id), { status, catatanWali, diputuskanOleh: S.user.nama, waktuKeputusan: nowISO() });
     if (status === "disetujui") {
       await addDoc(collection(db, "transaksi"), {
         tipe: "keluar", nominal: Number(p.nominal), kategori: p.kategori,
@@ -1651,16 +1405,11 @@ window.putuskanPengajuan = async (id, status) => {
         status: "disetujui", oleh: "Wali Kelas", sumberPengajuan: id, waktu: nowISO()
       });
     }
-
-    await kirimNotif({
-      target: "bendahara",
+    await kirimNotif({ target: "bendahara",
       judul: status === "disetujui" ? "✅ Pengajuan Disetujui" : "❌ Pengajuan Ditolak",
-      pesan: status === "disetujui"
-        ? `Pengajuan ${rupiah(p.nominal)} untuk "${p.kategori}" telah DISETUJUI oleh Wali Kelas. Pengeluaran resmi tercatat.`
+      pesan: status === "disetujui" ? `Pengajuan ${rupiah(p.nominal)} untuk "${p.kategori}" telah DISETUJUI. Pengeluaran resmi tercatat.`
         : `Pengajuan ${rupiah(p.nominal)} untuk "${p.kategori}" DITOLAK. Catatan: ${catatanWali}`,
-      tipe: status === "disetujui" ? "success" : "warning"
-    });
-
+      tipe: status === "disetujui" ? "success" : "warning" });
     toast(status === "disetujui" ? "Pengajuan disetujui ✅" : "Pengajuan ditolak", status === "disetujui" ? "success" : "warning");
     closeModal();
   } catch (e) { toast("Gagal: " + e.message, "error"); }
@@ -1669,7 +1418,6 @@ window.putuskanPengajuan = async (id, status) => {
 function transaksiPage() {
   const list = [...S.transaksi].sort((a, b) => (b.waktu || b.tanggal || "").localeCompare(a.waktu || a.tanggal || ""));
   const t = totals();
-
   return `
   <div class="space-y-4 fade-in">
     <div class="grid grid-cols-3 gap-2">
@@ -1677,28 +1425,22 @@ function transaksiPage() {
       ${statCard("Masuk", rupiah(t.masuk), "", "green")}
       ${statCard("Keluar", rupiah(t.keluar), "", "red")}
     </div>
-
     <div class="grid grid-cols-2 gap-2">
       <button onclick="openFormTransaksi('masuk')" class="bg-emerald-600 text-white py-2.5 rounded-xl text-sm font-semibold">➕ Pemasukan</button>
       <button onclick="openFormTransaksi('keluar')" class="bg-slate-800 text-white py-2.5 rounded-xl text-sm font-semibold">➖ Pengeluaran</button>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
       <div class="p-4 font-semibold text-sm text-slate-700">📒 Riwayat Transaksi</div>
       ${list.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada transaksi.</div>` :
         list.map(x => `
         <div class="p-3.5 flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full grid place-items-center text-sm font-bold shrink-0 ${x.tipe === "masuk" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}">
-            ${x.tipe === "masuk" ? "↓" : "↑"}
-          </div>
+          <div class="w-9 h-9 rounded-full grid place-items-center text-sm font-bold shrink-0 ${x.tipe === "masuk" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}">${x.tipe === "masuk" ? "↓" : "↑"}</div>
           <div class="flex-1 min-w-0">
             <div class="text-sm font-medium truncate">${esc(x.kategori || "-")}</div>
             <div class="text-[11px] text-slate-400 truncate">${fmtTanggal(x.tanggal)} • ${esc(x.keterangan || "-")}</div>
           </div>
           <div class="text-right shrink-0">
-            <div class="text-sm font-bold ${x.tipe === "masuk" ? "text-emerald-700" : "text-red-600"}">
-              ${x.tipe === "masuk" ? "+" : "−"}${rupiah(x.nominal)}
-            </div>
+            <div class="text-sm font-bold ${x.tipe === "masuk" ? "text-emerald-700" : "text-red-600"}">${x.tipe === "masuk" ? "+" : "−"}${rupiah(x.nominal)}</div>
             <button onclick="hapusTransaksi('${x.id}')" class="text-[10px] text-slate-400 hover:text-red-600">hapus</button>
           </div>
         </div>`).join("")}
@@ -1710,24 +1452,14 @@ window.openFormTransaksi = (tipe) => {
   const kat = (S.config.kategori || []).map(k => `<option>${esc(k)}</option>`).join("");
   openModal(tipe === "masuk" ? "➕ Pemasukan Kas" : "➖ Pengeluaran Kas", `
     <div class="space-y-3">
-      <div>
-        <label class="text-xs font-medium text-slate-500">Nominal</label>
-        <input id="trNominal" type="number" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
-      </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Kategori</label>
+      <div><label class="text-xs font-medium text-slate-500">Nominal</label><input id="trNominal" type="number" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" /></div>
+      <div><label class="text-xs font-medium text-slate-500">Kategori</label>
         <select id="trKategori" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200">
           ${tipe === "masuk" ? `<option>Saldo Awal</option><option>Donasi</option><option>Lain-lain</option>` : kat}
         </select>
       </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Tanggal</label>
-        <input id="trTanggal" type="date" value="${dateKey(new Date())}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
-      </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Keterangan</label>
-        <input id="trKet" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
-      </div>
+      <div><label class="text-xs font-medium text-slate-500">Tanggal</label><input id="trTanggal" type="date" value="${dateKey(new Date())}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" /></div>
+      <div><label class="text-xs font-medium text-slate-500">Keterangan</label><input id="trKet" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" /></div>
       <button onclick="submitTransaksi('${tipe}')" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Simpan</button>
     </div>
   `);
@@ -1758,7 +1490,6 @@ function siswaPage() {
   return `
   <div class="space-y-4 fade-in">
     <button onclick="openFormSiswa()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">➕ Tambah Siswa</button>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
       <div class="p-4 flex justify-between items-center">
         <h3 class="font-semibold text-sm text-slate-700">👥 Daftar Siswa</h3>
@@ -1769,14 +1500,10 @@ function siswaPage() {
         <div class="p-3.5 flex items-center gap-2">
           <div class="w-9 h-9 rounded-full bg-slate-100 grid place-items-center text-xs font-bold text-slate-600 shrink-0">${esc(s.absen)}</div>
           <div class="flex-1 min-w-0">
-            <div class="text-sm font-medium truncate">${esc(s.nama)}
-              ${s.isBendahara ? `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">Bendahara</span>` : ""}
-            </div>
+            <div class="text-sm font-medium truncate">${esc(s.nama)} ${s.isBendahara ? `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">Bendahara</span>` : ""}</div>
             <div class="text-[11px] text-slate-400">NISN ${esc(s.nisn)}</div>
           </div>
-          <button onclick="toggleBendahara('${esc(s.nisn)}')" class="text-[11px] font-bold px-2 py-1.5 rounded-lg bg-slate-100 text-slate-700">
-            ${s.isBendahara ? "Cabut" : "Jadikan Bendahara"}
-          </button>
+          <button onclick="toggleBendahara('${esc(s.nisn)}')" class="text-[11px] font-bold px-2 py-1.5 rounded-lg bg-slate-100 text-slate-700">${s.isBendahara ? "Cabut" : "Jadikan Bendahara"}</button>
           <button onclick="openFormSiswa('${esc(s.nisn)}')" class="text-slate-400 hover:text-brand-700 px-1">✏️</button>
           <button onclick="hapusSiswa('${esc(s.nisn)}')" class="text-slate-400 hover:text-red-600 px-1">🗑️</button>
         </div>`).join("")}
@@ -1791,33 +1518,19 @@ window.seedSiswa = async (silent = false) => {
     const toAdd = SEED_SISWA.filter(s => !existing.has(s.nisn));
     if (toAdd.length === 0) return;
     for (const s of toAdd) {
-      await setDoc(doc(db, "siswa", s.nisn), {
-        nisn: s.nisn, nama: s.nama, absen: s.absen,
-        isBendahara: false, waktu: nowISO()
-      });
+      await setDoc(doc(db, "siswa", s.nisn), { nisn: s.nisn, nama: s.nama, absen: s.absen, isBendahara: false, waktu: nowISO() });
     }
     if (!silent) toast(`${toAdd.length} siswa berhasil diimport ✅`, "success");
-  } catch (e) {
-    toast("Gagal import: " + e.message, "error");
-  }
+  } catch (e) { toast("Gagal import: " + e.message, "error"); }
 };
 
 window.openFormSiswa = (nisn = null) => {
   const s = nisn ? S.siswa.find(x => x.nisn === nisn) : null;
   openModal(s ? "✏️ Edit Siswa" : "➕ Tambah Siswa", `
     <div class="space-y-3">
-      <div>
-        <label class="text-xs font-medium text-slate-500">NISN</label>
-        <input id="swNisn" value="${esc(s?.nisn || "")}" ${s ? "disabled" : ""} class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 disabled:bg-slate-100" />
-      </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Nama Lengkap</label>
-        <input id="swNama" value="${esc(s?.nama || "")}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
-      </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Nomor Absen</label>
-        <input id="swAbsen" type="number" value="${esc(s?.absen || "")}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
-      </div>
+      <div><label class="text-xs font-medium text-slate-500">NISN</label><input id="swNisn" value="${esc(s?.nisn || "")}" ${s ? "disabled" : ""} class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 disabled:bg-slate-100" /></div>
+      <div><label class="text-xs font-medium text-slate-500">Nama Lengkap</label><input id="swNama" value="${esc(s?.nama || "")}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" /></div>
+      <div><label class="text-xs font-medium text-slate-500">Nomor Absen</label><input id="swAbsen" type="number" value="${esc(s?.absen || "")}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" /></div>
       <button onclick="submitSiswa(${s ? `'${esc(s.nisn)}'` : "null"})" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Simpan</button>
     </div>
   `);
@@ -1828,13 +1541,11 @@ window.submitSiswa = async (nisn) => {
   const nama = document.getElementById("swNama").value.trim();
   const absen = document.getElementById("swAbsen").value.trim();
   if (!nisnVal || !nama || !absen) return toast("Lengkapi semua data", "error");
-
   const ref = doc(db, "siswa", nisnVal);
   const snap = await getDoc(ref);
   await setDoc(ref, {
     nisn: nisnVal, nama, absen: Number(absen),
-    isBendahara: snap.exists() ? !!snap.data().isBendahara : false,
-    waktu: nowISO()
+    isBendahara: snap.exists() ? !!snap.data().isBendahara : false, waktu: nowISO()
   }, { merge: true });
   toast("Data siswa tersimpan ✅", "success");
   closeModal();
@@ -1890,52 +1601,28 @@ window.bacaSemua = async () => {
 function pengaturanPage() {
   const isWali = S.user.role === "wali";
   const isBendahara = S.user.role === "bendahara";
-
   return `
   <div class="space-y-4 fade-in">
     ${isWali ? `
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
       <h3 class="font-semibold text-sm text-slate-700">⚙️ Pengaturan Kelas</h3>
       <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-xs font-medium text-slate-500">Nama Kelas</label>
-          <input id="cfKelas" value="${esc(S.config.namaKelas)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
-        </div>
-        <div>
-          <label class="text-xs font-medium text-slate-500">Tahun Ajaran</label>
-          <input id="cfTahun" value="${esc(S.config.tahunAjaran)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
-        </div>
-        <div>
-          <label class="text-xs font-medium text-slate-500">Kas Rabu (Rp)</label>
-          <input id="cfRabu" type="number" value="${S.config.kasRabu}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
-        </div>
-        <div>
-          <label class="text-xs font-medium text-slate-500">Kas Jumat (Rp)</label>
-          <input id="cfJumat" type="number" value="${S.config.kasJumat}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
-        </div>
-        <div>
-          <label class="text-xs font-medium text-slate-500">Batas Tunggakan (jadwal)</label>
-          <input id="cfBatas" type="number" value="${S.config.batasTunggakan}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
-        </div>
-        <div>
-          <label class="text-xs font-medium text-slate-500">Mulai Hitung Jadwal</label>
-          <input id="cfMulai" type="date" value="${esc(S.config.tanggalMulai)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
-        </div>
+        <div><label class="text-xs font-medium text-slate-500">Nama Kelas</label><input id="cfKelas" value="${esc(S.config.namaKelas)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" /></div>
+        <div><label class="text-xs font-medium text-slate-500">Tahun Ajaran</label><input id="cfTahun" value="${esc(S.config.tahunAjaran)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" /></div>
+        <div><label class="text-xs font-medium text-slate-500">Kas Rabu (Rp)</label><input id="cfRabu" type="number" value="${S.config.kasRabu}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" /></div>
+        <div><label class="text-xs font-medium text-slate-500">Kas Jumat (Rp)</label><input id="cfJumat" type="number" value="${S.config.kasJumat}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" /></div>
+        <div><label class="text-xs font-medium text-slate-500">Batas Tunggakan (jadwal)</label><input id="cfBatas" type="number" value="${S.config.batasTunggakan}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" /></div>
+        <div><label class="text-xs font-medium text-slate-500">Mulai Hitung Jadwal</label><input id="cfMulai" type="date" value="${esc(S.config.tanggalMulai)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" /></div>
       </div>
-      <div>
-        <label class="text-xs font-medium text-slate-500">Kategori Pengeluaran (pisahkan koma)</label>
-        <input id="cfKategori" value="${esc((S.config.kategori || []).join(", "))}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
-      </div>
+      <div><label class="text-xs font-medium text-slate-500">Kategori Pengeluaran (pisahkan koma)</label><input id="cfKategori" value="${esc((S.config.kategori || []).join(", "))}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" /></div>
       <button onclick="simpanConfig()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Simpan Pengaturan</button>
     </div>
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
       <h3 class="font-semibold text-sm text-slate-700">🔐 PIN Wali Kelas</h3>
       <input id="cfPin" type="text" placeholder="PIN baru" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
       <button onclick="simpanPin()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-semibold">Ubah PIN</button>
     </div>
     ` : ""}
-
     ${(isWali || isBendahara) ? `
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-4">
       <div class="text-center mb-2">
@@ -1943,26 +1630,19 @@ function pengaturanPage() {
         <h3 class="font-bold text-slate-800 mt-2">Pusat Migrasi Catatan Lama (AI)</h3>
         <p class="text-xs text-slate-500 mt-1">Gunakan bantuan ChatGPT atau Gemini untuk membaca foto catatan kas lama.</p>
       </div>
-
       <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition relative">
         <input type="file" id="aiFile" accept="image/*,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleAiFile(this)">
-        <div class="text-slate-500 text-sm">
-          <span class="text-xl block mb-1">📁</span>
-          <span id="aiFileName">Ketuk untuk pilih Foto / PDF</span>
-        </div>
+        <div class="text-slate-500 text-sm"><span class="text-xl block mb-1">📁</span><span id="aiFileName">Ketuk untuk pilih Foto / PDF</span></div>
       </div>
-
       <div>
         <label class="text-xs font-medium text-slate-500">1. Salin Prompt Ini</label>
         <textarea id="aiPrompt" rows="4" class="w-full mt-1 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-[10px] text-slate-600 leading-relaxed" readonly>${esc(AI_PROMPT)}</textarea>
         <button onclick="salinPrompt()" class="w-full mt-2 bg-slate-800 text-white text-sm py-2 rounded-lg font-semibold">📋 Salin Prompt</button>
       </div>
-
       <div class="grid grid-cols-2 gap-2">
         <a href="https://chatgpt.com/" target="_blank" class="bg-emerald-100 text-emerald-800 text-center py-2.5 rounded-xl text-xs font-bold block">Buka ChatGPT ↗</a>
         <a href="https://gemini.google.com/" target="_blank" class="bg-blue-100 text-blue-800 text-center py-2.5 rounded-xl text-xs font-bold block">Buka Gemini ↗</a>
       </div>
-
       <div class="border-t border-slate-100 pt-3">
         <label class="text-xs font-medium text-slate-500">2. Tempel Hasil Rekap dari AI (Opsional)</label>
         <textarea id="aiResult" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="Paste hasil rekap dari ChatGPT/Gemini di sini agar tersimpan..."></textarea>
@@ -1970,7 +1650,6 @@ function pengaturanPage() {
       </div>
     </div>
     ` : ""}
-
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
       <h3 class="font-semibold text-sm text-slate-700">📱 Notifikasi HP</h3>
       <p class="text-xs text-slate-500">Aktifkan agar notifikasi muncul di panel notifikasi HP (dengan suara & getar).</p>
@@ -1990,16 +1669,11 @@ window.handleAiFile = (input) => {
 window.simpanHasilAI = async () => {
   const teks = document.getElementById("aiResult").value.trim();
   if (!teks) return toast("Tempel hasil rekap AI terlebih dahulu", "error");
-
   try {
-    await addDoc(collection(db, "catatan_migrasi"), {
-      teks, oleh: S.user.nama, waktu: nowISO()
-    });
+    await addDoc(collection(db, "catatan_migrasi"), { teks, oleh: S.user.nama, waktu: nowISO() });
     toast("Catatan rekap berhasil disimpan ke database ✅", "success");
     document.getElementById("aiResult").value = "";
-  } catch (e) {
-    toast("Gagal menyimpan: " + e.message, "error");
-  }
+  } catch (e) { toast("Gagal menyimpan: " + e.message, "error"); }
 };
 
 window.simpanConfig = async () => {
@@ -2027,12 +1701,8 @@ window.simpanPin = async () => {
 
 window.salinPrompt = async () => {
   const ta = document.getElementById("aiPrompt");
-  try {
-    await navigator.clipboard.writeText(ta.value);
-    toast("Prompt disalin ✅", "success");
-  } catch {
-    ta.select(); document.execCommand("copy"); toast("Prompt disalin ✅", "success");
-  }
+  try { await navigator.clipboard.writeText(ta.value); toast("Prompt disalin ✅", "success"); }
+  catch { ta.select(); document.execCommand("copy"); toast("Prompt disalin ✅", "success"); }
 };
 
 window.tesNotif = () => showSystemNotification("Tes Notifikasi 🔔", "Ini contoh notifikasi kas kelas di HP Anda.");
@@ -2089,14 +1759,12 @@ async function boot() {
   if ("serviceWorker" in navigator) {
     try { await navigator.serviceWorker.register("./sw.js"); } catch (e) { console.warn("SW gagal:", e); }
   }
-
   if (!FIREBASE_READY) {
     const err = document.getElementById("loginErr");
     err.textContent = "Konfigurasi Firebase belum diisi.";
     err.classList.remove("hidden");
     return;
   }
-
   try {
     const snap = await getDoc(doc(db, "config", "kelas"));
     if (snap.exists()) {
@@ -2110,27 +1778,21 @@ async function boot() {
       await setDoc(doc(db, "config", "kelas"), DEFAULT_CONFIG);
       S.config = { ...DEFAULT_CONFIG };
     }
-
     const siswaSnap = await getDocs(collection(db, "siswa"));
-    if (siswaSnap.empty) {
-      await seedSiswa(true);
-    }
-
+    if (siswaSnap.empty) { await seedSiswa(true); }
   } catch (e) { console.warn("boot error", e); }
 
   const saved = localStorage.getItem("kas_session");
   if (saved) {
     try {
       const u = JSON.parse(saved);
-      if (u.role === "wali") {
-        S.user = u;
-      } else {
+      if (u.role === "wali") { S.user = u; }
+      else {
         const snap = await getDoc(doc(db, "siswa", u.nisn));
         if (snap.exists()) S.user = { ...u, nama: snap.data().nama, absen: snap.data().absen };
       }
     } catch {}
   }
-
   if (S.user) {
     document.getElementById("loginScreen").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
