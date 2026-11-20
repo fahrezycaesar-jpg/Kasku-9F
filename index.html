@@ -1,690 +1,1754 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Kasku IX F - PWA</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Kas Kelas IX F — Pengelolaan Uang Kas</title>
+<meta name="theme-color" content="#065f46" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="manifest" href='data:application/manifest+json,{"name":"Kasku IX F","short_name":"Kasku","start_url":".","display":"standalone","background_color":"%23f8fafc","theme_color":"%2310b981","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2489/2489756.png","sizes":"512x512","type":"image/png"}]}'>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+tailwind.config = {
+  theme: { extend: { colors: { brand: { 50:'#ecfdf5',100:'#d1fae5',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b' } } } }
+}
+</script>
+<style>
+  html, body { -webkit-tap-highlight-color: transparent; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .fade-in { animation: fade .25s ease-out; }
+  @keyframes fade { from { opacity:0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+</style>
+</head>
+<body class="min-h-screen bg-[#F8FAFC] text-slate-800 antialiased">
+
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-6">
+      <div class="text-5xl mb-2">💰</div>
+      <h1 class="text-2xl font-bold text-brand-800">Kas Kelas IX F</h1>
+      <p class="text-sm text-slate-500">Pengelolaan Uang Kas Kelas</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg p-5 border border-slate-100">
+      <div class="flex bg-slate-100 rounded-xl p-1 mb-4 text-sm font-medium">
+        <button data-tab="siswa" class="tab-btn flex-1 py-2 rounded-lg transition">Siswa</button>
+        <button data-tab="bendahara" class="tab-btn flex-1 py-2 rounded-lg transition">Bendahara</button>
+        <button data-tab="wali" class="tab-btn flex-1 py-2 rounded-lg transition">Wali Kelas</button>
+      </div>
+
+      <form id="formLogin" class="space-y-3" autocomplete="off">
+        <div id="fieldSiswa" class="space-y-3">
+          <div>
+            <label class="text-xs font-medium text-slate-500">NISN</label>
+            <input id="inNisn" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none" placeholder="Contoh: 0114066287" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500">Nama Lengkap</label>
+            <input id="inNama" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none" placeholder="Sesuai data kelas" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-500">Nomor Absen</label>
+            <input id="inAbsen" type="number" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none" placeholder="Contoh: 1" />
+          </div>
+        </div>
+
+        <div id="fieldWali" class="hidden">
+          <label class="text-xs font-medium text-slate-500">PIN Keamanan Wali Kelas</label>
+          <input id="inPin" type="password" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none" placeholder="••••••••" />
+        </div>
+
+        <button type="submit" class="w-full bg-brand-700 hover:bg-brand-800 text-white py-3 rounded-xl font-semibold transition">Masuk</button>
+        <p id="loginErr" class="text-sm text-red-600 hidden"></p>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-4 leading-relaxed">
+      PIN Wali Kelas awal: <b>130711#$$#</b><br/>
+      Siswa & Bendahara login dengan NISN, Nama, dan Nomor Absen.
+    </p>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" class="hidden pb-24">
+  <header class="sticky top-0 z-30 bg-brand-800 text-white shadow-md">
+    <div class="max-w-5xl mx-auto px-3 sm:px-4 py-2.5 flex items-center gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-xl">💰</span>
+        <div class="min-w-0">
+          <div class="font-bold text-sm leading-tight truncate">Kas Kelas</div>
+          <div id="hdrKelas" class="text-[11px] text-emerald-200 leading-tight truncate"></div>
+        </div>
+      </div>
+
+      <div class="ml-auto flex items-center gap-1.5">
+        <button id="btnNotifHp" class="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1.5 rounded-lg transition">
+          🔔 Aktifkan Notif HP
+        </button>
+        <button id="btnBell" class="relative w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 grid place-items-center transition">
+          <span class="text-lg">🔔</span>
+          <span id="badgeNotif" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-[10px] font-bold grid place-items-center">0</span>
+        </button>
+        <div id="userChip" class="hidden sm:block text-right leading-tight"></div>
+        <button id="btnLogout" class="w-9 h-9 rounded-lg bg-white/10 hover:bg-red-500/70 grid place-items-center transition" title="Keluar">🚪</button>
+      </div>
+    </div>
+    <nav id="nav" class="max-w-5xl mx-auto px-2 pb-2 flex gap-1 overflow-x-auto no-scrollbar"></nav>
+  </header>
+
+  <main id="view" class="max-w-5xl mx-auto px-3 sm:px-4 py-4"></main>
+</div>
+
+<div id="drawerRoot"></div>
+<div id="modalRoot" data-open="0"></div>
+<div id="toastRoot" class="fixed top-3 left-1/2 -translate-x-1/2 z-[70] space-y-2 w-[92%] max-w-sm"></div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getDatabase, ref, onValue, push, set, update, remove, get, child } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+/* =========================================================================
+   KONFIGURASI FIREBASE — SUDAH TERPASANG
+   ========================================================================= */
+const firebaseConfig = {
+  apiKey:            "AIzaSyA96aoU5fs_O_DUQH1CVD3s5B9k2Rp6c8k",
+  authDomain:        "kas-kelas-9f.firebaseapp.com",
+  projectId:         "kas-kelas-9f",
+  storageBucket:     "kas-kelas-9f.firebasestorage.app",
+  messagingSenderId: "298229792014",
+  appId:             "1:298229792014:web:1571bd29e1b2c04187ab5f"
+};
+const FIREBASE_READY = !firebaseConfig.apiKey.startsWith("GANTI");
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyB5zD7EJwjkZEvxwH53otiZhKhzRJew5w",
-    authDomain: "kasku-9f.firebaseapp.com",
-    databaseURL: "https://kasku-9f-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "kasku-9f",
-    storageBucket: "kasku-9f.firebasestorage.app",
-    messagingSenderId: "677128251717",
-    appId: "1:677128251717:web:a951041c3bc1974a8eb62c"
-  };
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+  collection, onSnapshot, query, where, getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+let db = null;
+if (FIREBASE_READY) {
   const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  db = getFirestore(app);
+}
 
-  let currentUser = null;
-  let currentRole = null;
-  let appSettings = { pin: "130711#$$#", className: "IX F", nominalKas: 2000, limitTunggakan: 2 };
-  let students = [];
-  let payments = [];
-  let expenses = [];
-  let notifications = [];
-  let myChart = null;
+/* =========================================================================
+   DATA SISWA KELAS IX F (SEED)
+   ========================================================================= */
+const SEED_SISWA = [
+  { absen: 1,  nisn: "0114066287", nama: "AFFLAH INTAN NOOR IZZAH" },
+  { absen: 2,  nisn: "0118692248", nama: "AHMAD RENO KHOIDOR MAULANA" },
+  { absen: 3,  nisn: "0112942743", nama: "AMELIA AYU SAFIRA" },
+  { absen: 4,  nisn: "0111233617", nama: "ANGGUN KHAIRUNNISA AZZAHRA" },
+  { absen: 5,  nisn: "0114663158", nama: "ARIFKI KHOIRUN NIZAR" },
+  { absen: 6,  nisn: "0114178225", nama: "ATHALIA WIDYA PRAMESWARI" },
+  { absen: 7,  nisn: "0101510293", nama: "AYU NOVTA DIUSTIRA" },
+  { absen: 8,  nisn: "0118332371", nama: "BISMA NARENDRA AZKA LAKSANA" },
+  { absen: 9,  nisn: "0123765617", nama: "Callista Micheils Nathania" },
+  { absen: 10, nisn: "0111981485", nama: "Cyntha Lailatul Qur'an" },
+  { absen: 11, nisn: "0117824276", nama: "DEVARA RAKHA ADIWIJAYA" },
+  { absen: 12, nisn: "0121520669", nama: "DHIA AULIA NUR MAKAILA" },
+  { absen: 13, nisn: "0117904935", nama: "Dini Anggraini" },
+  { absen: 14, nisn: "0128981655", nama: "FAIRIS ZALFA HERDIANI" },
+  { absen: 15, nisn: "0117365726", nama: "Firman Maulana Putra" },
+  { absen: 16, nisn: "0112989802", nama: "GHISTA FELIYANA FAJRIN" },
+  { absen: 17, nisn: "3113631140", nama: "IBNU SAWQISYAH" },
+  { absen: 18, nisn: "0115475381", nama: "JULIA PRICILIA TUNGGAL DEWI" },
+  { absen: 19, nisn: "0109006940", nama: "M. RAFY HANIF ASLAM" },
+  { absen: 20, nisn: "0118942240", nama: "MOCH ARIEF RAHMAN HAKIM" },
+  { absen: 21, nisn: "3111040608", nama: "Muhammad Caesar Fahrezy" },
+  { absen: 22, nisn: "0119106615", nama: "MUHAMMAD NAUFAL PUTRA RADITYA" },
+  { absen: 23, nisn: "0117067156", nama: "MUHAMMAD RIZAL TRISANTOSO" },
+  { absen: 24, nisn: "0116154718", nama: "NAFITA DWI LESTARI" },
+  { absen: 25, nisn: "0114451725", nama: "NINDIYA CALLISTA PRIMALIA SARI" },
+  { absen: 26, nisn: "0117403868", nama: "PRADANA RAHADIAN NUGROHO" },
+  { absen: 27, nisn: "0128561944", nama: "Qaniah Shakirah Pulungan" },
+  { absen: 28, nisn: "0124246957", nama: "SATRIO ANDI BRAMANTIO" },
+  { absen: 29, nisn: "0111171681", nama: "Sazkia Aulia Putri" },
+  { absen: 30, nisn: "0111158563", nama: "YANUARTA AINUN NADZAR" },
+  { absen: 31, nisn: "0114410744", nama: "YULIANA NUR CAHYA" }
+];
 
-  const rupiah = (num) => "Rp " + (num || 0).toLocaleString('id-ID');
-  const timeNow = () => new Date().toISOString();
-  // FUNGSI PEMBERSIH SPASI & HURUF
-  const cleanStr = (str) => String(str || '').replace(/\s+/g, '').toLowerCase();
+/* =========================================================================
+   KONSTANTA & UTIL
+   ========================================================================= */
+const DEFAULT_CONFIG = {
+  namaKelas: "IX F",
+  tahunAjaran: "2025/2026",
+  kasRabu: 2000,
+  kasJumat: 2000,
+  batasTunggakan: 2,
+  tanggalMulai: "2025-07-01",
+  pinWali: "130711#$$#",
+  kategori: ["Kebersihan Kelas","Konsumsi Rapat","Alat Tulis","Dekorasi Kelas","Sosial / Duka","Lain-lain"]
+};
 
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('data:text/javascript,self.addEventListener("notificationclick",e=>{e.notification.close();e.waitUntil(clients.openWindow("/"))});').catch(e=>console.log(e));
-    });
+const TEMPLATES = [
+  "Halo [Nama], pengingat kas hari Rabu/Jumat sebesar Rp2.000 ya. Terima kasih 🙏",
+  "Halo [Nama], tunggakan kasmu sudah melewati batas yang ditentukan. Mohon segera diselesaikan ya.",
+  "Halo [Nama], jangan lupa setor uang kas hari ini ya. Terima kasih 😊",
+  "Halo [Nama], mohon segera melunasi tunggakan kas kelas. Terima kasih atas kerja samanya."
+];
+
+const AI_PROMPT = `Tolong baca dan rekap seluruh catatan uang kas kelas pada foto ini secara akurat. Kelompokkan menjadi: (1) Pemasukan / Saldo Awal, (2) Pengeluaran beserta tujuan/kategorinya, dan (3) Catatan pembayaran siswa (termasuk jadwal hari Rabu dan Jumat jika ada). Hitung total pemasukan, total pengeluaran, dan sisa saldo akhirnya dengan rapi. Sajikan hasilnya dalam format laporan resmi yang terstruktur agar mudah saya simpan/ubah menjadi file PDF.`;
+
+const pad = n => String(n).padStart(2, "0");
+const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const rupiah = n => "Rp" + (Number(n) || 0).toLocaleString("id-ID");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const nowISO = () => new Date().toISOString();
+
+function weekKey(d) {
+  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  t.setDate(t.getDate() - ((t.getDay() + 6) % 7));
+  return dateKey(t);
+}
+function fmtTanggal(s) {
+  try { return new Date(s).toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" }); }
+  catch { return s; }
+}
+
+/* =========================================================================
+   STATE
+   ========================================================================= */
+const S = {
+  user: null, page: "dashboard",
+  config: { ...DEFAULT_CONFIG },
+  siswa: [], pembayaran: [], transaksi: [], pengajuan: [], notif: [],
+  unsubs: [], chart: null, chart2: null,
+  chartPeriod: "bulan", weekOffset: 0, notifInit: false, loginTab: "siswa"
+};
+
+const NAV = {
+  siswa:     [["dashboard","Beranda"],["riwayat","Riwayat Saya"],["notif","Notifikasi"]],
+  bendahara: [["dashboard","Beranda"],["bayar","Kelola Kas"],["tunggakan","Tunggakan"],["pengajuan","Pengajuan"],["transaksi","Transaksi"],["notif","Notifikasi"],["pengaturan","Alat & Pengaturan"]],
+  wali:      [["dashboard","Beranda"],["tunggakan","Tunggakan"],["pengajuan","Persetujuan"],["siswa","Siswa"],["bayar","Kelola Kas"],["transaksi","Transaksi"],["notif","Notifikasi"],["pengaturan","Pengaturan"]]
+};
+
+/* =========================================================================
+   NOTIFIKASI
+   ========================================================================= */
+function toast(msg, type = "info") {
+  const colors = { info:"bg-slate-800", success:"bg-emerald-600", error:"bg-red-600", warning:"bg-amber-500" };
+  const el = document.createElement("div");
+  el.className = `${colors[type] || colors.info} text-white text-sm px-4 py-3 rounded-xl shadow-lg fade-in`;
+  el.textContent = msg;
+  document.getElementById("toastRoot").appendChild(el);
+  setTimeout(() => { el.style.transition = "opacity .3s"; el.style.opacity = "0"; setTimeout(()=>el.remove(), 300); }, 3800);
+}
+
+async function showSystemNotification(title, body) {
+  try {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    const reg = await navigator.serviceWorker?.ready.catch(() => null);
+    const opts = { body, icon:"./icon-192.png", badge:"./icon-192.png", vibrate:[200,100,200], tag:"kas-"+Date.now(), renotify:true };
+    if (reg) await reg.showNotification(title, opts);
+    else new Notification(title, opts);
+  } catch (e) { console.warn("system notif error", e); }
+}
+
+async function mintaIzinNotif() {
+  if (!("Notification" in window)) { toast("Browser ini tidak mendukung notifikasi", "error"); return; }
+  if (Notification.permission === "granted") { toast("Notifikasi HP sudah aktif ✅", "success"); return; }
+  const p = await Notification.requestPermission();
+  if (p === "granted") {
+    toast("Notifikasi HP aktif ✅", "success");
+    showSystemNotification("Notifikasi aktif 🔔", "Anda akan menerima pemberitahuan kas kelas di HP ini.");
+  } else toast("Izin notifikasi ditolak. Aktifkan dari pengaturan browser.", "error");
+  render();
+}
+
+async function kirimNotif({ target, nisn = null, judul, pesan, tipe = "info" }) {
+  if (!db) return;
+  await addDoc(collection(db, "notifikasi"), {
+    target, nisn, judul, pesan, tipe, dibaca: false,
+    waktu: nowISO(), oleh: S.user?.nama || S.user?.role || "sistem"
+  });
+}
+
+function onNewNotif(n) {
+  toast(n.judul + " — " + n.pesan.slice(0, 80), n.tipe === "warning" ? "warning" : "info");
+  showSystemNotification(n.judul, n.pesan);
+}
+
+/* =========================================================================
+   PERHITUNGAN
+   ========================================================================= */
+function jadwalList() {
+  const start = new Date(S.config.tanggalMulai || "2025-07-01");
+  const today = new Date();
+  const out = [];
+  const d = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  while (d <= end) {
+    const dow = d.getDay();
+    if (dow === 3 || dow === 5) {
+      out.push({
+        tanggal: dateKey(d), hari: dow === 3 ? "Rabu" : "Jumat",
+        weekKey: weekKey(d),
+        nominal: dow === 3 ? Number(S.config.kasRabu) : Number(S.config.kasJumat)
+      });
+    }
+    d.setDate(d.getDate() + 1);
   }
+  return out;
+}
 
-  const defaultSiswa = {
-    '1': { id: 1, nisn: '0114066287', absen: 1, nama: 'AFFLAH INTAN NOOR IZZAH', isBendahara: false },
-    '2': { id: 2, nisn: '0118692248', absen: 2, nama: 'AHMAD RENO KHOIDOR MAULANA', isBendahara: false },
-    '3': { id: 3, nisn: '0112942743', absen: 3, nama: 'AMELIA AYU SAFIRA', isBendahara: false },
-    '4': { id: 4, nisn: '0111233617', absen: 4, nama: 'ANGGUN KHAIRUNNISA AZZAHRA', isBendahara: false },
-    '5': { id: 5, nisn: '0114663158', absen: 5, nama: 'ARIFKI KHOIRUN NIZAR', isBendahara: false },
-    '6': { id: 6, nisn: '0114178225', absen: 6, nama: 'ATHALIA WIDYA PRAMESWARI', isBendahara: false },
-    '7': { id: 7, nisn: '0101510293', absen: 7, nama: 'AYU NOVTA DIUSTIRA', isBendahara: false },
-    '8': { id: 8, nisn: '0118332371', absen: 8, nama: 'BISMA NARENDRA AZKA LAKSANA', isBendahara: false },
-    '9': { id: 9, nisn: '0123765617', absen: 9, nama: 'Callista Micheils Nathania', isBendahara: false },
-    '10': { id: 10, nisn: '0111981485', absen: 10, nama: "Cyntha Lailatul Qur'an", isBendahara: false },
-    '11': { id: 11, nisn: '0117824276', absen: 11, nama: 'DEVARA RAKHA ADIWIJAYA', isBendahara: false },
-    '12': { id: 12, nisn: '0121520669', absen: 12, nama: 'DHIA AULIA NUR MAKAILA', isBendahara: false },
-    '13': { id: 13, nisn: '0117904935', absen: 13, nama: 'Dini Anggraini', isBendahara: false },
-    '14': { id: 14, nisn: '0128981655', absen: 14, nama: 'FAIRIS ZALFA HERDIANI', isBendahara: false },
-    '15': { id: 15, nisn: '0117365726', absen: 15, nama: 'Firman Maulana Putra', isBendahara: false },
-    '16': { id: 16, nisn: '0112989802', absen: 16, nama: 'GHISTA FELIYANA FAJRIN', isBendahara: false },
-    '17': { id: 17, nisn: '3113631140', absen: 17, nama: 'IBNU SAWQISYAH', isBendahara: false },
-    '18': { id: 18, nisn: '0115475381', absen: 18, nama: 'JULIA PRICILIA TUNGGAL DEWI', isBendahara: true },
-    '19': { id: 19, nisn: '0109006940', absen: 19, nama: 'M. RAFY HANIF ASLAM', isBendahara: false },
-    '20': { id: 20, nisn: '0118942240', absen: 20, nama: 'MOCH ARIEF RAHMAN HAKIM', isBendahara: false },
-    '21': { id: 21, nisn: '3111040608', absen: 21, nama: 'Muhammad Caesar Fahrezy', isBendahara: false },
-    '22': { id: 22, nisn: '0119106615', absen: 22, nama: 'MUHAMMAD NAUFAL PUTRA RADITYA', isBendahara: false },
-    '23': { id: 23, nisn: '0117067156', absen: 23, nama: 'MUHAMMAD RIZAL TRISANTOSO', isBendahara: false },
-    '24': { id: 24, nisn: '0116154718', absen: 24, nama: 'NAFITA DWI LESTARI', isBendahara: false },
-    '25': { id: 25, nisn: '0114451725', absen: 25, nama: 'NINDIYA CALLISTA PRIMALIA SARI', isBendahara: false },
-    '26': { id: 26, nisn: '0117403868', absen: 26, nama: 'PRADANA RAHADIAN NUGROHO', isBendahara: false },
-    '27': { id: 27, nisn: '0128561944', absen: 27, nama: 'Qaniah Shakirah Pulungan', isBendahara: false },
-    '28': { id: 28, nisn: '0124246957', absen: 28, nama: 'SATRIO ANDI BRAMANTIO', isBendahara: false },
-    '29': { id: 29, nisn: '0111171681', absen: 29, nama: 'Sazkia Aulia Putri', isBendahara: false },
-    '30': { id: 30, nisn: '0111158563', absen: 30, nama: 'YANUARTA AINUN NADZAR', isBendahara: false },
-    '31': { id: 31, nisn: '0114410744', absen: 31, nama: 'YULIANA NUR CAHYA', isBendahara: true }
+function paidDates(nisn) {
+  return new Set(S.pembayaran.filter(p => p.nisn === nisn).map(p => p.tanggal));
+}
+
+function studentStats(s) {
+  const jad = jadwalList();
+  const paid = paidDates(s.nisn);
+  const unpaid = jad.filter(j => !paid.has(j.tanggal));
+  const batas = Number(S.config.batasTunggakan) || 0;
+  return {
+    jadwal: jad, lunasCount: jad.length - unpaid.length, unpaid,
+    tunggakanCount: unpaid.length,
+    tunggakanNominal: unpaid.reduce((a, j) => a + j.nominal, 0),
+    batas, lewatBatas: unpaid.length > batas
   };
+}
 
-  async function initApp() {
-    const dbRef = ref(db);
-    
-    const setSnap = await get(child(dbRef, 'settings/global'));
-    if (!setSnap.exists()) {
-      await set(ref(db, 'settings/global'), appSettings);
+function totals() {
+  const masukPembayaran = S.pembayaran.reduce((a, p) => a + Number(p.nominal || 0), 0);
+  const masukLain = S.transaksi.filter(t => t.tipe === "masuk").reduce((a, t) => a + Number(t.nominal || 0), 0);
+  const keluar = S.transaksi.filter(t => t.tipe === "keluar" && t.status === "disetujui").reduce((a, t) => a + Number(t.nominal || 0), 0);
+  return { masuk: masukPembayaran + masukLain, keluar, saldo: masukPembayaran + masukLain - keluar };
+}
+
+function pengeluaranPerKategori() {
+  const map = {};
+  S.transaksi.filter(t => t.tipe === "keluar" && t.status === "disetujui").forEach(t => {
+    const k = t.kategori || "Lain-lain";
+    map[k] = (map[k] || 0) + Number(t.nominal || 0);
+  });
+  return map;
+}
+
+function expenseSeries(period) {
+  const now = new Date();
+  const items = [];
+  if (period === "minggu") {
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now); d.setDate(d.getDate() - i * 7);
+      const k = weekKey(d);
+      items.push({ key: k, label: new Date(k + "T00:00:00").toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) });
+    }
+  } else if (period === "bulan") {
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      items.push({ key: `${d.getFullYear()}-${pad(d.getMonth()+1)}`, label: d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" }) });
+    }
+  } else {
+    for (let i = 4; i >= 0; i--) {
+      const y = now.getFullYear() - i;
+      items.push({ key: String(y), label: String(y) });
+    }
+  }
+  const keluar = S.transaksi.filter(t => t.tipe === "keluar" && t.status === "disetujui");
+  const values = items.map(it => keluar.filter(t => {
+    const tg = t.tanggal || (t.waktu || "").slice(0, 10);
+    if (!tg) return false;
+    if (period === "minggu") return weekKey(new Date(tg)) === it.key;
+    if (period === "bulan") return tg.slice(0, 7) === it.key;
+    return tg.slice(0, 4) === it.key;
+  }).reduce((a, t) => a + Number(t.nominal || 0), 0));
+  return { labels: items.map(i => i.label), values };
+}
+
+function progressMingguIni() {
+  const wk = weekKey(new Date());
+  const jad = jadwalList().filter(j => j.weekKey === wk);
+  const total = S.siswa.length * jad.length;
+  if (!total) return { persen: 0, sudah: 0, total: 0, jadwal: jad };
+  const sudah = jad.reduce((acc, j) => acc + S.siswa.filter(s => paidDates(s.nisn).has(j.tanggal)).length, 0);
+  return { persen: Math.round((sudah / total) * 100), sudah, total, jadwal: jad };
+}
+
+/* =========================================================================
+   AUTO NOTIF TUNGGAKAN
+   ========================================================================= */
+let cekTimer = null;
+function scheduleCekTunggakan() {
+  if (!S.user || S.user.role === "siswa" || !db) return;
+  clearTimeout(cekTimer);
+  cekTimer = setTimeout(cekTunggakan, 2500);
+}
+
+async function cekTunggakan() {
+  if (!S.siswa.length) return;
+  const wk = weekKey(new Date());
+  for (const s of S.siswa) {
+    const st = studentStats(s);
+    if (!st.lewatBatas) continue;
+    const logId = `${s.nisn}_${wk}`;
+    try {
+      const snap = await getDoc(doc(db, "logTunggakan", logId));
+      if (snap.exists()) continue;
+      await setDoc(doc(db, "logTunggakan", logId), {
+        nisn: s.nisn, nama: s.nama, weekKey: wk,
+        tunggakan: st.tunggakanCount, nominal: st.tunggakanNominal, waktu: nowISO()
+      });
+      await kirimNotif({
+        target: "wali",
+        judul: "⚠️ Tunggakan Melewati Batas",
+        pesan: `${s.nama} (Absen ${s.absen}) memiliki ${st.tunggakanCount} jadwal tunggakan senilai ${rupiah(st.tunggakanNominal)} — melewati batas ${st.batas} jadwal.`,
+        tipe: "warning"
+      });
+    } catch (e) { console.warn("cek tunggakan", e); }
+  }
+}
+
+/* =========================================================================
+   AUTH
+   ========================================================================= */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    S.loginTab = btn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b => {
+      const active = b.dataset.tab === S.loginTab;
+      b.classList.toggle("bg-white", active);
+      b.classList.toggle("shadow-sm", active);
+      b.classList.toggle("text-brand-700", active);
+      b.classList.toggle("text-slate-500", !active);
+    });
+    document.getElementById("fieldSiswa").classList.toggle("hidden", S.loginTab === "wali");
+    document.getElementById("fieldWali").classList.toggle("hidden", S.loginTab !== "wali");
+  });
+});
+document.querySelector('.tab-btn[data-tab="siswa"]').click();
+
+document.getElementById("formLogin").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const err = document.getElementById("loginErr");
+  err.classList.add("hidden");
+  if (!FIREBASE_READY) {
+    err.textContent = "Konfigurasi Firebase belum diisi.";
+    err.classList.remove("hidden");
+    return;
+  }
+
+  try {
+    if (S.loginTab === "wali") {
+      const pin = document.getElementById("inPin").value.trim();
+      if (pin !== String(S.config.pinWali)) throw new Error("PIN Wali Kelas salah.");
+      loginAs({ role: "wali", nama: "Wali Kelas", nisn: null, absen: null });
     } else {
-      appSettings = setSnap.val();
-    }
+      const nisn = document.getElementById("inNisn").value.trim();
+      const nama = document.getElementById("inNama").value.trim();
+      const absen = document.getElementById("inAbsen").value.trim();
+      if (!nisn || !nama || !absen) throw new Error("Semua kolom wajib diisi.");
 
-    const stuSnap = await get(child(dbRef, 'siswa'));
-    if (!stuSnap.exists()) {
-      await set(ref(db, 'siswa'), defaultSiswa);
-    }
+      const snap = await getDoc(doc(db, "siswa", nisn));
+      if (!snap.exists()) throw new Error("NISN tidak terdaftar. Minta Wali Kelas login dulu & klik 'Import Siswa IX F'.");
+      const data = snap.data();
+      if (String(data.nama).trim().toLowerCase() !== nama.toLowerCase())
+        throw new Error("Nama lengkap tidak cocok dengan NISN tersebut.");
+      if (String(data.absen).trim() !== absen)
+        throw new Error("Nomor absen tidak cocok.");
 
-    onValue(ref(db, 'siswa'), (snap) => {
-      students = [];
-      snap.forEach(d => students.push(d.val()));
-      students.sort((a,b) => a.absen - b.absen);
-      if(currentRole === 'bendahara' || currentRole === 'wali') renderDataTables();
+      if (S.loginTab === "bendahara" && !data.isBendahara)
+        throw new Error("Akun ini bukan Bendahara. Silakan masuk lewat tab Siswa.");
+
+      loginAs({
+        role: S.loginTab === "bendahara" ? "bendahara" : "siswa",
+        nisn, nama: data.nama, absen: data.absen
+      });
+    }
+  } catch (ex) {
+    err.textContent = ex.message;
+    err.classList.remove("hidden");
+  }
+});
+
+function loginAs(user) {
+  S.user = user;
+  localStorage.setItem("kas_session", JSON.stringify(user));
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  S.page = "dashboard";
+  subscribeAll();
+  subscribeNotif();
+  render();
+  toast(`Selamat datang, ${user.nama}`, "success");
+}
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("kas_session");
+  location.reload();
+});
+document.getElementById("btnBell").addEventListener("click", openDrawer);
+document.getElementById("btnNotifHp").addEventListener("click", mintaIzinNotif);
+
+/* =========================================================================
+   SUBSCRIPTIONS
+   ========================================================================= */
+function subscribeAll() {
+  S.unsubs.forEach(u => u());
+  S.unsubs = [];
+
+  S.unsubs.push(onSnapshot(doc(db, "config", "kelas"), snap => {
+    if (snap.exists()) S.config = { ...DEFAULT_CONFIG, ...snap.data() };
+    else { setDoc(doc(db, "config", "kelas"), DEFAULT_CONFIG); S.config = { ...DEFAULT_CONFIG }; }
+    render();
+  }));
+
+  S.unsubs.push(onSnapshot(collection(db, "siswa"), snap => {
+    S.siswa = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+    scheduleCekTunggakan();
+  }));
+
+  S.unsubs.push(onSnapshot(collection(db, "pembayaran"), snap => {
+    S.pembayaran = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+    scheduleCekTunggakan();
+  }));
+
+  S.unsubs.push(onSnapshot(collection(db, "transaksi"), snap => {
+    S.transaksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+  }));
+
+  S.unsubs.push(onSnapshot(collection(db, "pengajuan"), snap => {
+    S.pengajuan = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.waktu || "").localeCompare(a.waktu || ""));
+    render();
+  }));
+}
+
+function subscribeNotif() {
+  const targets = S.user.role === "wali" ? ["wali", "all"]
+                : S.user.role === "bendahara" ? ["bendahara", "all"]
+                : ["siswa", "all"];
+
+  const q = query(collection(db, "notifikasi"), where("target", "in", targets));
+  S.unsubs.push(onSnapshot(q, snap => {
+    const list = [];
+    snap.forEach(d => {
+      const n = { id: d.id, ...d.data() };
+      if (S.user.role === "siswa" && n.target === "siswa" && n.nisn && n.nisn !== S.user.nisn) return;
+      if (S.user.role === "wali" && n.target === "siswa") return;
+      if (S.user.role === "bendahara" && n.target === "siswa") return;
+      list.push(n);
     });
+    list.sort((a, b) => (b.waktu || "").localeCompare(a.waktu || ""));
+    S.notif = list;
 
-    onValue(ref(db, 'payments'), (snap) => {
-      payments = [];
-      snap.forEach(d => payments.push({ id: d.key, ...d.val() }));
-      if(currentRole) updateDashboard();
-    });
+    if (S.notifInit) {
+      snap.docChanges().forEach(ch => {
+        if (ch.type !== "added") return;
+        const n = { id: ch.doc.id, ...ch.doc.data() };
+        if (S.user.role === "siswa" && n.target === "siswa" && n.nisn && n.nisn !== S.user.nisn) return;
+        if (S.user.role !== "siswa" && n.target === "siswa") return;
+        if (!n.dibaca) onNewNotif(n);
+      });
+    } else S.notifInit = true;
 
-    onValue(ref(db, 'expenses'), (snap) => {
-      expenses = [];
-      snap.forEach(d => expenses.push({ id: d.key, ...d.val() }));
-      if(currentRole) updateDashboard();
-    });
+    renderBell();
+    if (S.page === "notif") render();
+  }));
+}
 
-    onValue(ref(db, 'notifications'), (snap) => {
-      notifications = [];
-      snap.forEach(d => notifications.push({ id: d.key, ...d.val() }));
-      notifications.sort((a,b) => new Date(b.date) - new Date(a.date));
-      if(currentRole) renderNotifications();
-    });
+function unreadCount() { return S.notif.filter(n => !n.dibaca).length; }
 
-    document.getElementById('loading-screen').classList.add('hidden');
-    document.getElementById('login-screen').classList.remove('hidden');
-  }
+function renderBell() {
+  const b = document.getElementById("badgeNotif");
+  const c = unreadCount();
+  b.textContent = c > 99 ? "99+" : c;
+  b.classList.toggle("hidden", c === 0);
+}
 
-  window.loginSiswa = function() {
-    if(students.length === 0) return Swal.fire('Tunggu', 'Data sedang dimuat, coba lagi 2 detik lagi.', 'info');
+/* =========================================================================
+   RENDER
+   ========================================================================= */
+function render() {
+  if (!S.user) return;
+  if (document.getElementById("modalRoot").dataset.open === "1") return;
 
-    const nisn = document.getElementById('login-nisn').value.trim();
-    const nama = document.getElementById('login-nama').value.trim();
-    const absen = parseInt(document.getElementById('login-absen').value);
+  document.getElementById("hdrKelas").textContent = `${S.config.namaKelas} • ${S.config.tahunAjaran}`;
 
-    // PENCOCOKAN SUPER PINTAR (Hapus semua spasi & abaikan besar-kecil huruf)
-    const student = students.find(s => 
-      cleanStr(s.nisn) === cleanStr(nisn) && 
-      parseInt(s.absen) === parseInt(absen) && 
-      cleanStr(s.nama) === cleanStr(nama)
-    );
+  const roleLabel = { siswa: "Siswa", bendahara: "Bendahara", wali: "Wali Kelas" }[S.user.role];
+  document.getElementById("userChip").innerHTML =
+    `<div class="text-[11px] text-emerald-200">${esc(roleLabel)}</div>
+     <div class="text-xs font-semibold truncate max-w-[130px]">${esc(S.user.nama)}</div>`;
 
-    if (!student) {
-      // DEBUGGING: Kasih tahu apa yang dibaca sistem
-      const foundAbsen = students.find(s => parseInt(s.absen) === parseInt(absen));
-      let debugMsg = `Yang kamu ketik:<br>NISN: "${nisn}"<br>Nama: "${nama}"<br>Absen: ${absen}<br><br>`;
-      if(foundAbsen) {
-        debugMsg += `Data di sistem (Absen ${absen}):<br>NISN: "${foundAbsen.nisn}"<br>Nama: "${foundAbsen.nama}"`;
-      } else {
-        debugMsg += `Absen ${absen} tidak ditemukan.`;
-      }
-      return Swal.fire({ title: 'Gagal Login', html: debugMsg, icon: 'error' });
-    }
+  const nav = document.getElementById("nav");
+  nav.innerHTML = (NAV[S.user.role] || []).map(([p, label]) => `
+    <button onclick="go('${p}')"
+      class="whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition
+      ${S.page === p ? "bg-white text-brand-800" : "bg-white/10 text-white hover:bg-white/20"}">
+      ${label}
+    </button>`).join("");
 
-    currentUser = student;
-    
-    if(student.isBendahara) {
-      document.getElementById('btn-switch-bendahara').classList.remove('hidden');
-      showPage('siswa'); 
-      logActivity('Bendahara', `${student.nama} login sebagai Siswa`);
-    } else {
-      document.getElementById('btn-switch-bendahara').classList.add('hidden');
-      currentRole = 'siswa';
-      showPage('siswa');
-    }
-  };
+  document.getElementById("view").innerHTML = pageHTML();
+  document.getElementById("btnNotifHp").classList.toggle("hidden",
+    !("Notification" in window) || Notification.permission === "granted");
 
-  window.loginWali = function() {
-    const pin = document.getElementById('login-pin').value;
-    if (pin !== appSettings.pin) return Swal.fire('Gagal', 'PIN Wali Kelas Salah!', 'error');
-    
-    currentUser = { id: "wali", nama: "Wali Kelas", absen: "Wali" };
-    currentRole = 'wali';
-    showPage('wali');
-    logActivity('Wali Kelas', `Wali Kelas login`);
-  };
+  afterRender();
+  renderBell();
+}
 
-  window.switchRole = function(role) {
-    if(role === 'bendahara') {
-      currentRole = 'bendahara';
-      showPage('bendahara');
-      document.getElementById('btn-mode-siswa').classList.remove('hidden');
-      document.getElementById('btn-switch-bendahara').classList.add('hidden');
-    } else {
-      currentRole = 'siswa';
-      showPage('siswa');
-      document.getElementById('btn-mode-siswa').classList.add('hidden');
-      document.getElementById('btn-switch-bendahara').classList.remove('hidden');
-    }
-  }
+window.go = (p) => { S.page = p; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
-  function showPage(role) {
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('app-screen').classList.remove('hidden');
-    
-    document.getElementById('view-siswa').classList.add('hidden');
-    document.getElementById('view-bendahara').classList.add('hidden');
-    document.getElementById('view-wali').classList.add('hidden');
-    
-    document.getElementById(`view-${role}`).classList.remove('hidden');
-    document.getElementById('nav-name').innerText = currentUser.nama.split(' ')[0] + ` (${role})`;
-    
-    updateDashboard();
-    requestNotifPermission();
-  }
-
-  window.logout = function() {
-    currentUser = null; currentRole = null;
-    document.getElementById('app-screen').classList.add('hidden');
-    document.getElementById('login-screen').classList.remove('hidden');
-    document.getElementById('login-nisn').value = '';
-    document.getElementById('login-nama').value = '';
-    document.getElementById('login-absen').value = '';
-    document.getElementById('login-pin').value = '';
-    if(myChart) { myChart.destroy(); myChart = null; }
-  }
-
-  function requestNotifPermission() {
-    if (!("Notification" in window)) return;
-    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-      Notification.requestPermission();
-    }
-  }
-
-  async function sendNotification(targetRole, targetId, title, message) {
-    const notifData = { targetRole, targetId: targetId || "all", title, message, read: false, date: timeNow() };
-    await push(ref(db, 'notifications'), notifData);
-
-    if (currentRole === targetRole && Notification.permission === "granted") {
-      new Notification(title, { body: message, icon: "https://cdn-icons-png.flaticon.com/512/2489/2489756.png" });
-    }
-  }
-
-  function renderNotifications() {
-    const myNotifs = notifications.filter(n => n.targetRole === currentRole && (n.targetId === 'all' || n.targetId == currentUser.id || currentUser.absen));
-    const unread = myNotifs.filter(n => !n.read).length;
-    
-    document.getElementById('notif-badge').innerText = unread > 0 ? unread : '';
-    document.getElementById('notif-badge').style.display = unread > 0 ? 'flex' : 'none';
-
-    const list = document.getElementById('notif-list');
-    if (list) {
-      list.innerHTML = myNotifs.map(n => `
-        <div class="p-3 border-b ${n.read ? 'bg-white' : 'bg-blue-50'}">
-          <div class="flex justify-between items-start">
-            <h4 class="font-bold text-sm ${n.read ? 'text-gray-700' : 'text-blue-800'}">${n.title}</h4>
-            <span class="text-xs text-gray-400">${new Date(n.date).toLocaleDateString()}</span>
-          </div>
-          <p class="text-xs text-gray-600 mt-1">${n.message}</p>
-        </div>
-      `).join('');
-    }
-  }
-
-  function hitungTunggakan(siswaId) {
-    const totalBayar = payments.filter(p => p.studentId == siswaId).reduce((a, b) => a + b.amount, 0);
-    const target = 40000;
-    return Math.max(0, target - totalBayar);
-  }
-
-  function isMelewatiBatas(siswaId) {
-    const tunggakan = hitungTunggakan(siswaId);
-    const batasRp = appSettings.limitTunggakan * appSettings.nominalKas;
-    return tunggakan > batasRp;
-  }
-
-  function updateDashboard() {
-    const totalMasuk = payments.reduce((a, b) => a + b.amount, 0);
-    const totalKeluar = expenses.filter(e => e.status === 'approved').reduce((a, b) => a + b.amount, 0);
-    const saldo = totalMasuk - totalKeluar;
-
-    if (currentRole === 'siswa') {
-      const myPayments = payments.filter(p => p.studentId == currentUser.absen);
-      const myTotal = myPayments.reduce((a, b) => a + b.amount, 0);
-      const myTunggakan = hitungTunggakan(currentUser.absen);
-      const isBatas = isMelewatiBatas(currentUser.absen);
-
-      document.getElementById('s-total').innerText = rupiah(myTotal);
-      document.getElementById('s-tunggakan').innerText = rupiah(myTunggakan);
-      document.getElementById('s-status').innerText = isBatas ? "Melewati Batas!" : "Aman";
-      document.getElementById('s-status').className = `text-lg font-bold ${isBatas ? 'text-red-600' : 'text-emerald-600'}`;
-
-      document.getElementById('s-riwayat').innerHTML = myPayments.sort((a,b)=>new Date(b.date) - new Date(a.date)).map(p => `
-        <div class="flex justify-between p-2 border-b text-sm">
-          <span>${new Date(p.date).toLocaleDateString()} - ${p.note || 'Kas'}</span>
-          <span class="text-emerald-600 font-bold">+${rupiah(p.amount)}</span>
-        </div>
-      `).join('') || '<p class="text-gray-500 text-sm">Belum ada bayar.</p>';
-      
-      renderChart();
-    }
-
-    if (currentRole === 'bendahara' || currentRole === 'wali') {
-      if(document.getElementById('b-masuk')) {
-        document.getElementById('b-masuk').innerText = rupiah(totalMasuk);
-        document.getElementById('b-keluar').innerText = rupiah(totalKeluar);
-        document.getElementById('b-saldo').innerText = rupiah(saldo);
-        if(document.getElementById('b-masuk-wali')) {
-          document.getElementById('b-masuk-wali').innerText = rupiah(totalMasuk);
-          document.getElementById('b-keluar-wali').innerText = rupiah(totalKeluar);
-          document.getElementById('b-saldo-wali').innerText = rupiah(saldo);
-        }
-      }
-
-      const tunggakanHtml = students.map(s => {
-        const t = hitungTunggakan(s.absen);
-        if (t > 0) {
-          const lewat = isMelewatiBatas(s.absen);
-          return `
-            <div class="flex justify-between items-center p-3 border-b">
-              <div>
-                <p class="font-bold text-sm">${s.nama}</p>
-                <p class="text-xs ${lewat ? 'text-red-500 font-bold' : 'text-amber-500'}">Tunggakan: ${rupiah(t)} ${lewat ? '(Melewati Batas!)' : ''}</p>
-              </div>
-              <button onclick="kirimNotifSiswa(${s.absen}, '${s.nama}')" class="bg-blue-500 text-white px-3 py-1 rounded text-xs"><i class="fas fa-bell"></i> Ingatkan</button>
-            </div>
-          `;
-        }
-        return '';
-      }).join('');
-      
-      if(document.getElementById('tunggakan-list')) document.getElementById('tunggakan-list').innerHTML = tunggakanHtml || '<p class="text-sm p-3">Semua lunas!</p>';
-      if(document.getElementById('tunggakan-list-wali')) document.getElementById('tunggakan-list-wali').innerHTML = tunggakanHtml || '<p class="text-sm p-3">Semua lunas!</p>';
-
-      const pendingExp = expenses.filter(e => e.status === 'pending');
-      if(document.getElementById('approval-list')) {
-        document.getElementById('approval-list').innerHTML = pendingExp.map(e => `
-          <div class="bg-white p-3 rounded shadow mb-2 border-l-4 border-amber-500">
-            <p class="font-bold text-sm">${e.category}</p>
-            <p class="text-xs text-gray-600">${e.note}</p>
-            <p class="text-red-500 font-bold mt-1">${rupiah(e.amount)}</p>
-            <div class="flex gap-2 mt-2">
-              <button onclick="approveExpense('${e.id}', true)" class="flex-1 bg-green-500 text-white py-1 rounded text-xs">Setuju</button>
-              <button onclick="approveExpense('${e.id}', false)" class="flex-1 bg-red-500 text-white py-1 rounded text-xs">Tolak</button>
-            </div>
-          </div>
-        `).join('') || '<p class="text-sm">Tidak ada pengajuan.</p>';
-      }
-      renderDataTables();
-    }
-  }
-
-  window.tambahKas = async function(siswaId, nominal) {
-    await push(ref(db, 'payments'), { studentId: siswaId, amount: nominal, note: "Kas Manual", date: timeNow() });
-    Swal.fire('Sukses', 'Kas dicatat!', 'success');
-  }
-
-  window.quickAdd = async function(nominal) {
-    const sid = document.getElementById('b-pilih-siswa').value;
-    if(!sid) return Swal.fire('Pilih Siswa', 'Pilih siswa dulu!', 'warning');
-    await tambahKas(sid, nominal);
-  }
-
-  window.ajukanPengeluaran = async function(e) {
-    e.preventDefault();
-    const nominal = parseInt(document.getElementById('ex-nominal').value);
-    const kategori = document.getElementById('ex-kategori').value;
-    const catatan = document.getElementById('ex-catatan').value;
-
-    await push(ref(db, 'expenses'), { amount: nominal, category: kategori, note: catatan, status: 'pending', date: timeNow() });
-    sendNotification('wali', 'all', 'Pengajuan Kas Baru', `Bendahara mengajukan penggunaan kas: ${kategori} sebesar ${rupiah(nominal)}`);
-    Swal.fire('Terkirim', 'Menunggu persetujuan Wali Kelas', 'success');
-    document.getElementById('ex-nominal').value = '';
-    document.getElementById('ex-catatan').value = '';
-  }
-
-  window.approveExpense = async function(id, isApprove) {
-    let alasan = "";
-    if(!isApprove) {
-      const { value: text } = await Swal.fire({ title: 'Alasan Penolakan', input: 'textarea', inputPlaceholder: 'Tulis alasan...' });
-      if(text === undefined) return;
-      alasan = text;
-    }
-
-    await update(ref(db, 'expenses/' + id), { status: isApprove ? 'approved' : 'rejected', rejectionReason: alasan });
-    sendNotification('bendahara', 'all', isApprove ? 'Pengajuan Disetujui' : 'Pengajuan Ditolak', `Pengajuan Anda telah ${isApprove ? 'disetujui' : 'ditolak. Alasan: ' + alasan}`);
-    Swal.fire('Sukses', 'Keputusan disimpan', 'success');
-  }
-
-  window.kirimNotifSiswa = function(absen, nama) {
-    Swal.fire({
-      title: 'Kirim Pesan ke ' + nama,
-      input: 'select',
-      inputOptions: {
-        'ingat': 'Halo, pengingat kas hari Rabu/Jumat Rp2.000 ya',
-        'batas': 'Tunggakan kasmu sudah melewati batas, mohon segera diselesaikan',
-        'custom': 'Tulis Pesan Sendiri...'
-      },
-      inputPlaceholder: 'Pilih template',
-      showCancelButton: true
-    }).then(async (result) => {
-      if (result.value) {
-        let msg = result.value;
-        if(msg === 'custom') {
-          const { value: customMsg } = await Swal.fire({ title: 'Tulis Pesan', input: 'text' });
-          msg = customMsg;
-        } else {
-          msg = result.value === 'ingat' ? `Halo ${nama}, pengingat kas hari Rabu/Jumat sebesar Rp2.000 ya` : `Halo ${nama}, tunggakan kasmu sudah melewati batas yang ditentukan, mohon segera diselesaikan.`;
-        }
-        if(msg) {
-          sendNotification('siswa', absen, 'Pesan dari Pengurus', msg);
-          Swal.fire('Terkirim', 'Pesan masuk ke HP siswa', 'success');
+function afterRender() {
+  const c1 = document.getElementById("chartKeluar");
+  if (c1) {
+    if (S.chart) S.chart.destroy();
+    const { labels, values } = expenseSeries(S.chartPeriod);
+    S.chart = new Chart(c1, {
+      type: "bar",
+      data: { labels, datasets: [{ label: "Pengeluaran", data: values, backgroundColor: "#059669", borderRadius: 8, maxBarThickness: 40 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: v => "Rp" + Number(v).toLocaleString("id-ID") }, grid: { color: "#f1f5f9" } },
+          x: { grid: { display: false } }
         }
       }
     });
   }
-
-  window.simpanPIN = async function() {
-    const newPin = document.getElementById('new-pin').value;
-    if(newPin.length < 6) return Swal.fire('Error', 'PIN minimal 6 karakter', 'error');
-    await set(ref(db, 'settings/global/pin'), newPin);
-    appSettings.pin = newPin;
-    Swal.fire('Sukses', 'PIN Berhasil diubah', 'success');
-  }
-
-  function logActivity(role, action) {
-    push(ref(db, 'logs'), { role, action, date: timeNow() });
-  }
-
-  function renderDataTables() {
-    if(document.getElementById('b-pilih-siswa')) {
-      document.getElementById('b-pilih-siswa').innerHTML = students.map(s => `<option value="${s.absen}">${s.absen}. ${s.nama}</option>`).join('');
-    }
-  }
-
-  function renderChart() {
-    const ctx = document.getElementById('expenseChart');
-    if(!ctx) return;
-    if(myChart) myChart.destroy();
-
-    const categories = {};
-    expenses.filter(e => e.status === 'approved').forEach(e => {
-      categories[e.category] = (categories[e.category] || 0) + e.amount;
-    });
-
-    myChart = new Chart(ctx, {
-      type: 'doughnut',
+  const c2 = document.getElementById("chartKategori");
+  if (c2) {
+    if (S.chart2) S.chart2.destroy();
+    const map = pengeluaranPerKategori();
+    S.chart2 = new Chart(c2, {
+      type: "doughnut",
       data: {
-        labels: Object.keys(categories).length ? Object.keys(categories) : ['Belum Ada Pengeluaran'],
+        labels: Object.keys(map).length ? Object.keys(map) : ["Belum ada pengeluaran"],
         datasets: [{
-          data: Object.keys(categories).length ? Object.values(categories) : [1],
-          backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+          data: Object.values(map).length ? Object.values(map) : [1],
+          backgroundColor: ["#059669","#0ea5e9","#f59e0b","#ef4444","#8b5cf6","#64748b","#14b8a6"],
           borderWidth: 0
         }]
       },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      options: { responsive: true, maintainAspectRatio: false, cutout: "62%", plugins: { legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11 } } } } }
     });
   }
+}
 
-  window.copyPrompt = function() {
-    const text = `Tolong baca dan rekap seluruh catatan uang kas kelas pada foto ini secara akurat. Kelompokkan menjadi: (1) Pemasukan / Saldo Awal, (2) Pengeluaran beserta tujuan/kategorinya, dan (3) Catatan pembayaran siswa (termasuk jadwal hari Rabu dan Jumat jika ada). Hitung total pemasukan, total pengeluaran, dan sisa saldo akhirnya dengan rapi. Sajikan hasilnya dalam format laporan resmi yang terstruktur agar mudah saya simpan/ubah menjadi file PDF.`;
-    navigator.clipboard.writeText(text);
-    Swal.fire('Disalin!', 'Prompt berhasil disalin ke clipboard', 'success');
+window.setChartPeriod = (p) => { S.chartPeriod = p; render(); };
+
+/* =========================================================================
+   HALAMAN
+   ========================================================================= */
+function pageHTML() {
+  switch (S.page) {
+    case "dashboard":  return S.user.role === "siswa" ? siswaDashboard() : pengurusDashboard();
+    case "riwayat":    return riwayatSiswa();
+    case "bayar":      return kelolaKasPage();
+    case "tunggakan":  return tunggakanPage();
+    case "pengajuan":  return pengajuanPage();
+    case "transaksi":  return transaksiPage();
+    case "siswa":      return siswaPage();
+    case "notif":      return notifPage();
+    case "pengaturan": return pengaturanPage();
+    default: return "";
   }
+}
 
-  initApp();
-</script>
-</head>
+function statCard(label, value, sub, color = "brand") {
+  const map = {
+    brand:"from-emerald-600 to-emerald-700", green:"from-green-500 to-emerald-600",
+    red:"from-rose-500 to-red-600", amber:"from-amber-400 to-orange-500",
+    slate:"from-slate-600 to-slate-700", sky:"from-sky-500 to-blue-600"
+  };
+  return `
+  <div class="rounded-2xl p-4 text-white bg-gradient-to-br ${map[color] || map.brand} shadow-sm">
+    <div class="text-[11px] font-medium opacity-90">${esc(label)}</div>
+    <div class="text-lg sm:text-xl font-bold mt-1 leading-tight">${value}</div>
+    ${sub ? `<div class="text-[11px] opacity-80 mt-1">${sub}</div>` : ""}
+  </div>`;
+}
 
-<body class="bg-slate-50 text-slate-800 font-sans pb-20">
+function pengurusDashboard() {
+  const t = totals();
+  const prog = progressMingguIni();
+  const semua = S.siswa.map(s => ({ s, st: studentStats(s) }));
+  const lewat = semua.filter(x => x.st.lewatBatas);
+  const belum = semua.filter(x => x.st.tunggakanCount > 0 && !x.st.lewatBatas);
+  const totalTunggakan = semua.reduce((a, x) => a + x.st.tunggakanNominal, 0);
+  const pending = S.pengajuan.filter(p => p.status === "menunggu");
+  const noSiswa = S.siswa.length === 0 && S.user.role === "wali";
 
-<div id="loading-screen" class="fixed inset-0 bg-slate-50 flex flex-col items-center justify-center z-50">
-  <i class="fas fa-circle-notch fa-spin text-4xl text-emerald-500 mb-4"></i>
-  <h2 class="font-bold text-lg text-slate-700">Menghubungkan Kasku...</h2>
-</div>
+  return `
+  <div class="space-y-4 fade-in">
+    ${noSiswa ? `
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+        <div class="font-semibold text-emerald-800 mb-1">👋 Selamat datang, Wali Kelas!</div>
+        <p class="text-xs text-emerald-700 mb-3">Database siswa masih kosong. Klik tombol di bawah untuk meng-import 31 siswa Kelas IX F.</p>
+        <button onclick="seedSiswa()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl">📥 Import 31 Siswa Kelas IX F</button>
+      </div>` : ""}
 
-<div id="login-screen" class="hidden min-h-screen flex items-center justify-center p-4">
-  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
-    <div class="bg-emerald-600 p-6 text-white text-center">
-      <i class="fas fa-wallet text-4xl mb-2"></i>
-      <h1 class="text-xl font-bold">Kasku IX F</h1>
-      <p class="text-sm opacity-80">Sistem Informasi Uang Kas Kelas</p>
+    ${pending.length && S.user.role === "wali" ? `
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex items-center gap-3">
+        <span class="text-2xl">📥</span>
+        <div class="flex-1 text-sm"><b>${pending.length} pengajuan</b> penggunaan uang kas menunggu persetujuan Anda.</div>
+        <button onclick="go('pengajuan')" class="text-xs font-bold bg-amber-500 text-white px-3 py-1.5 rounded-lg">Tinjau</button>
+      </div>` : ""}
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      ${statCard("Total Saldo Kas", rupiah(t.saldo), "Saldo tersedia", "brand")}
+      ${statCard("Total Pemasukan", rupiah(t.masuk), "Kas + pemasukan lain", "green")}
+      ${statCard("Total Pengeluaran", rupiah(t.keluar), "Hanya yang disetujui", "red")}
+      ${statCard("Total Tunggakan", rupiah(totalTunggakan), `${lewat.length} siswa lewat batas`, "amber")}
     </div>
-    
-    <div class="p-6">
-      <div class="flex border-b mb-4">
-        <button onclick="showLoginTab('siswa')" id="tab-siswa" class="flex-1 py-2 font-bold text-emerald-600 border-b-2 border-emerald-600">Siswa</button>
-        <button onclick="showLoginTab('bendahara')" id="tab-bendahara" class="flex-1 py-2 font-bold text-slate-400">Bendahara</button>
-        <button onclick="showLoginTab('wali')" id="tab-wali" class="flex-1 py-2 font-bold text-slate-400">Wali Kelas</button>
-      </div>
 
-      <div id="form-siswa" class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">NISN</label>
-          <input type="text" id="login-nisn" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Masukkan NISN">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">Nomor Absen</label>
-          <input type="number" id="login-absen" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Cth: 21">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1">Nama Lengkap</label>
-          <input type="text" id="login-nama" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Sesuai Rapor">
-        </div>
-        <button onclick="loginSiswa()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg mt-2 hover:bg-emerald-700 transition">Masuk</button>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm text-slate-700">📊 Progres Kas Minggu Ini</h3>
+        <span class="text-xs font-bold text-brand-700">${prog.persen}%</span>
       </div>
-
-      <div id="form-wali" class="space-y-3 hidden bg-amber-50 p-4 rounded-xl border border-amber-200">
-        <p class="text-xs text-amber-700 font-bold mb-1"><i class="fas fa-shield-alt"></i> Akses Khusus Wali Kelas</p>
-        <input type="password" id="login-pin" class="w-full border p-2.5 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none" placeholder="Masukkan PIN Wali">
-        <button onclick="loginWali()" class="w-full bg-amber-500 text-white font-bold py-2 rounded-lg hover:bg-amber-600 transition text-sm">Masuk Wali Kelas</button>
+      <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-700 rounded-full transition-all" style="width:${prog.persen}%"></div>
       </div>
-    </div>
-  </div>
-</div>
-
-<div id="app-screen" class="hidden min-h-screen">
-  <nav class="bg-white shadow-sm sticky top-0 z-40">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><i class="fas fa-wallet"></i></div>
-        <div>
-          <h1 class="font-bold text-sm leading-tight">Kasku <span class="text-emerald-600">IX F</span></h1>
-          <p class="text-[10px] text-slate-500" id="nav-name">User</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <button id="btn-switch-bendahara" onclick="switchRole('bendahara')" class="hidden bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">Mode Bendahara</button>
-        <button id="btn-mode-siswa" onclick="switchRole('siswa')" class="hidden bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded">Mode Siswa</button>
-
-        <div class="relative cursor-pointer" onclick="Swal.fire({title:'Kotak Masuk', html: document.getElementById('notif-list').innerHTML, width: 400})">
-          <i class="fas fa-bell text-slate-600 text-lg"></i>
-          <span id="notif-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
-        </div>
-        <button onclick="logout()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg">Keluar</button>
+      <div class="flex justify-between text-[11px] text-slate-500 mt-2">
+        <span>${prog.sudah} dari ${prog.total} pembayaran</span>
+        <span>${prog.jadwal.map(j => `${j.hari} (${j.tanggal.slice(8)}/${j.tanggal.slice(5,7)})`).join(" • ") || "Belum ada jadwal"}</span>
       </div>
     </div>
-  </nav>
 
-  <div id="notif-list" class="hidden"></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
+        <div class="text-2xl font-bold text-red-600">${lewat.length}</div>
+        <div class="text-xs text-red-700 font-medium mt-1">Siswa Melewati Batas</div>
+      </div>
+      <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4">
+        <div class="text-2xl font-bold text-amber-600">${belum.length}</div>
+        <div class="text-xs text-amber-700 font-medium mt-1">Belum Melewati Batas</div>
+      </div>
+    </div>
 
-  <div class="max-w-4xl mx-auto p-4 space-y-6">
-    <div id="view-siswa" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <h2 class="text-sm font-bold text-slate-500 mb-3">Ringkasan Kas Kamu</h2>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-            <p class="text-[10px] font-bold text-emerald-600">TOTAL DIBAYAR</p>
-            <h3 class="text-lg font-bold text-emerald-800" id="s-total">Rp 0</h3>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 class="font-semibold text-sm text-slate-700">📈 Grafik Pengeluaran</h3>
+        <div class="flex bg-slate-100 rounded-lg p-0.5 text-[11px] font-semibold">
+          ${["minggu","bulan","tahun"].map(p => `
+            <button onclick="setChartPeriod('${p}')"
+              class="px-2.5 py-1 rounded-md ${S.chartPeriod === p ? "bg-white shadow-sm text-brand-700" : "text-slate-500"}">
+              ${p.charAt(0).toUpperCase() + p.slice(1)}
+            </button>`).join("")}
+        </div>
+      </div>
+      <div class="h-52"><canvas id="chartKeluar"></canvas></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+        <h3 class="font-semibold text-sm text-slate-700 mb-3">🍩 Pengeluaran per Kategori</h3>
+        <div class="h-52"><canvas id="chartKategori"></canvas></div>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+        <h3 class="font-semibold text-sm text-slate-700 mb-3">🗓️ Jadwal Kas Rutin</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50">
+            <div><b class="text-emerald-800">Rabu</b><div class="text-xs text-emerald-600">Setiap minggu</div></div>
+            <b class="text-emerald-800">${rupiah(S.config.kasRabu)}</b>
           </div>
-          <div class="bg-red-50 p-3 rounded-lg border border-red-100">
-            <p class="text-[10px] font-bold text-red-600">TUNGGAKAN</p>
-            <h3 class="text-lg font-bold text-red-800" id="s-tunggakan">Rp 0</h3>
+          <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50">
+            <div><b class="text-emerald-800">Jumat</b><div class="text-xs text-emerald-600">Setiap minggu</div></div>
+            <b class="text-emerald-800">${rupiah(S.config.kasJumat)}</b>
+          </div>
+          <div class="text-xs text-slate-500 pt-1">
+            Batas tunggakan: <b>${S.config.batasTunggakan} jadwal</b> ≈ ${rupiah(S.config.batasTunggakan * S.config.kasRabu)}
           </div>
         </div>
-        <div class="mt-3 text-center p-2 bg-slate-50 rounded-lg">
-          <p class="text-xs text-slate-500">Status Kamu:</p>
-          <p id="s-status" class="text-lg font-bold text-emerald-600">Aman</p>
-        </div>
       </div>
+    </div>
+  </div>`;
+}
 
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <h2 class="text-sm font-bold text-slate-700 mb-3">Riwayat Pembayaran Kamu</h2>
-        <div id="s-riwayat" class="space-y-2"></div>
-      </div>
+function siswaDashboard() {
+  const s = S.siswa.find(x => x.nisn === S.user.nisn);
+  if (!s) return `<div class="bg-white rounded-2xl p-6 text-center text-slate-500">Data siswa tidak ditemukan.</div>`;
+  const st = studentStats(s);
+  const t = totals();
+  const kat = pengeluaranPerKategori();
+  const totalKat = Object.values(kat).reduce((a, b) => a + b, 0);
+  const prog = progressMingguIni();
 
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <h2 class="text-sm font-bold text-slate-700 mb-3">Transparansi Pengeluaran Kelas</h2>
-        <canvas id="expenseChart" height="200"></canvas>
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl p-5 text-white shadow-sm">
+      <div class="text-xs opacity-90">Halo,</div>
+      <div class="text-xl font-bold">${esc(s.nama)}</div>
+      <div class="text-xs opacity-90 mt-1">Absen ${esc(s.absen)} • NISN ${esc(s.nisn)}</div>
+
+      <div class="mt-4 p-3 rounded-xl ${st.lewatBatas ? "bg-red-500/30 border border-red-300" : st.tunggakanCount > 0 ? "bg-amber-400/30 border border-amber-300" : "bg-emerald-500/30 border border-emerald-300"}">
+        ${st.tunggakanCount === 0
+          ? `<div class="font-semibold">✅ Lunas! Tidak ada tunggakan.</div>`
+          : `<div class="font-semibold">${st.lewatBatas ? "⚠️ Tunggakan MELEWATI BATAS" : "⏳ Tunggakan masih dalam batas"}</div>
+             <div class="text-sm mt-0.5">${st.tunggakanCount} jadwal • <b>${rupiah(st.tunggakanNominal)}</b></div>
+             <div class="text-[11px] opacity-90 mt-1">Batas: ${st.batas} jadwal</div>`}
       </div>
     </div>
 
-    <div id="view-bendahara" class="hidden space-y-4">
-      <div class="grid grid-cols-3 gap-2">
-        <div class="bg-blue-600 text-white p-3 rounded-xl shadow-sm">
-          <p class="text-[10px] opacity-80">Pemasukan</p>
-          <h3 class="text-sm font-bold" id="b-masuk">Rp 0</h3>
-        </div>
-        <div class="bg-red-600 text-white p-3 rounded-xl shadow-sm">
-          <p class="text-[10px] opacity-80">Pengeluaran</p>
-          <h3 class="text-sm font-bold" id="b-keluar">Rp 0</h3>
-        </div>
-        <div class="bg-emerald-600 text-white p-3 rounded-xl shadow-sm">
-          <p class="text-[10px] opacity-80">Saldo</p>
-          <h3 class="text-sm font-bold" id="b-saldo">Rp 0</h3>
-        </div>
-      </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      ${statCard("Saldo Kas Kelas", rupiah(t.saldo), "Sisa kas saat ini", "brand")}
+      ${statCard("Total Pemasukan", rupiah(t.masuk), "Seluruh kas masuk", "green")}
+      ${statCard("Total Pengeluaran", rupiah(t.keluar), "Yang disetujui", "red")}
+      ${statCard("Tunggakan Saya", rupiah(st.tunggakanNominal), `${st.tunggakanCount} jadwal`, st.lewatBatas ? "red" : "amber")}
+    </div>
 
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <h2 class="text-sm font-bold text-slate-700 mb-3">Pencatatan Kas Manual</h2>
-        <select id="b-pilih-siswa" class="w-full border p-2 rounded-lg mb-3 text-sm"></select>
-        <div class="grid grid-cols-3 gap-2">
-          <button onclick="quickAdd(2000)" class="bg-slate-100 py-2 rounded-lg text-xs font-bold text-slate-700">+2.000</button>
-          <button onclick="quickAdd(4000)" class="bg-slate-100 py-2 rounded-lg text-xs font-bold text-slate-700">+4.000</button>
-          <button onclick="quickAdd(5000)" class="bg-slate-100 py-2 rounded-lg text-xs font-bold text-slate-700">+5.000</button>
-          <button onclick="quickAdd(10000)" class="bg-slate-100 py-2 rounded-lg text-xs font-bold text-slate-700">+10.000</button>
-          <button onclick="quickAdd(20000)" class="bg-slate-100 py-2 rounded-lg text-xs font-bold text-slate-700">+20.000</button>
-          <button onclick="quickAdd(50000)" class="bg-slate-100 py-2 rounded-lg text-xs font-bold text-slate-700">+50.000</button>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <h3 class="font-semibold text-sm text-slate-700 mb-3">📊 Progres Kas Minggu Ini</h3>
+      <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-emerald-500 to-emerald-700 rounded-full" style="width:${prog.persen}%"></div>
+      </div>
+      <div class="text-[11px] text-slate-500 mt-2">${prog.persen}% pembayaran kelas minggu ini sudah masuk.</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <h3 class="font-semibold text-sm text-slate-700 mb-3">🗓️ Jadwal Kas Rutin</h3>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="p-3 rounded-xl bg-emerald-50 text-center">
+          <div class="font-bold text-emerald-800">Rabu</div>
+          <div class="text-sm text-emerald-700">${rupiah(S.config.kasRabu)}</div>
         </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <h2 class="text-sm font-bold text-slate-700 mb-3">Daftar Tunggakan Siswa</h2>
-        <div id="tunggakan-list" class="max-h-60 overflow-y-auto"></div>
-      </div>
-
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <h2 class="text-sm font-bold text-slate-700 mb-3">Ajukan Pengeluaran Kas</h2>
-        <form onsubmit="ajukanPengeluaran(event)" class="space-y-2">
-          <input type="number" id="ex-nominal" placeholder="Nominal (Rp)" class="w-full border p-2 rounded-lg text-sm" required>
-          <input type="text" id="ex-kategori" placeholder="Kategori (cth: Alat Tulis)" class="w-full border p-2 rounded-lg text-sm" required>
-          <textarea id="ex-catatan" placeholder="Keterangan detail" class="w-full border p-2 rounded-lg text-sm" rows="2"></textarea>
-          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg text-sm">Kirim Pengajuan ke Wali Kelas</button>
-        </form>
-      </div>
-
-      <div class="bg-gradient-to-r from-purple-500 to-indigo-500 p-4 rounded-xl shadow-sm text-white">
-        <h2 class="text-sm font-bold mb-2"><i class="fas fa-robot"></i> Asisten Migrasi Data Lama</h2>
-        <p class="text-xs opacity-90 mb-3">Gunakan AI untuk mengubah foto catatan kas lama menjadi PDF/Data terstruktur.</p>
-        <button onclick="copyPrompt()" class="w-full bg-white text-indigo-600 font-bold py-2 rounded-lg text-sm">Salin Prompt AI</button>
+        <div class="p-3 rounded-xl bg-emerald-50 text-center">
+          <div class="font-bold text-emerald-800">Jumat</div>
+          <div class="text-sm text-emerald-700">${rupiah(S.config.kasJumat)}</div>
+        </div>
       </div>
     </div>
 
-    <div id="view-wali" class="hidden space-y-4">
-      <div class="grid grid-cols-3 gap-2">
-        <div class="bg-blue-600 text-white p-3 rounded-xl shadow-sm">
-          <p class="text-[10px] opacity-80">Pemasukan</p>
-          <h3 class="text-sm font-bold" id="b-masuk-wali">Rp 0</h3>
-        </div>
-        <div class="bg-red-600 text-white p-3 rounded-xl shadow-sm">
-          <p class="text-[10px] opacity-80">Pengeluaran</p>
-          <h3 class="text-sm font-bold" id="b-keluar-wali">Rp 0</h3>
-        </div>
-        <div class="bg-emerald-600 text-white p-3 rounded-xl shadow-sm">
-          <p class="text-[10px] opacity-80">Saldo</p>
-          <h3 class="text-sm font-bold" id="b-saldo-wali">Rp 0</h3>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <h3 class="font-semibold text-sm text-slate-700 mb-3">💸 Uang Kas Digunakan Untuk Apa Aja</h3>
+      ${Object.keys(kat).length === 0
+        ? `<p class="text-sm text-slate-400">Belum ada pengeluaran yang disetujui.</p>`
+        : `<div class="space-y-2.5">
+            ${Object.entries(kat).sort((a, b) => b[1] - a[1]).map(([k, v]) => {
+              const pct = totalKat ? Math.round((v / totalKat) * 100) : 0;
+              return `<div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="font-medium text-slate-700">${esc(k)}</span>
+                  <span class="text-slate-500">${rupiah(v)} • ${pct}%</span>
+                </div>
+                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full" style="width:${pct}%"></div>
+                </div>
+              </div>`;
+            }).join("")}
+           </div>`}
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <h3 class="font-semibold text-sm text-slate-700">📈 Grafik Pengeluaran</h3>
+        <div class="flex bg-slate-100 rounded-lg p-0.5 text-[11px] font-semibold">
+          ${["minggu","bulan","tahun"].map(p => `
+            <button onclick="setChartPeriod('${p}')"
+              class="px-2.5 py-1 rounded-md ${S.chartPeriod === p ? "bg-white shadow-sm text-brand-700" : "text-slate-500"}">
+              ${p.charAt(0).toUpperCase() + p.slice(1)}
+            </button>`).join("")}
         </div>
       </div>
+      <div class="h-52"><canvas id="chartKeluar"></canvas></div>
+    </div>
 
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <h2 class="text-sm font-bold text-amber-600 mb-3"><i class="fas fa-clipboard-check"></i> Persetujuan Pengajuan Kas</h2>
-        <div id="approval-list" class="space-y-2"></div>
-      </div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <h3 class="font-semibold text-sm text-slate-700 mb-3">🧾 Tunggakan Saya</h3>
+      ${st.unpaid.length === 0
+        ? `<p class="text-sm text-emerald-600 font-medium">✅ Tidak ada tunggakan. Terima kasih!</p>`
+        : `<div class="space-y-1.5 max-h-52 overflow-y-auto">
+            ${st.unpaid.slice().reverse().map(j => `
+              <div class="flex justify-between text-xs p-2 rounded-lg ${st.lewatBatas ? "bg-red-50" : "bg-amber-50"}">
+                <span>${j.hari}, ${fmtTanggal(j.tanggal)}</span>
+                <b>${rupiah(j.nominal)}</b>
+              </div>`).join("")}
+           </div>`}
+    </div>
+  </div>`;
+}
 
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <div class="flex justify-between items-center mb-3">
-          <h2 class="text-sm font-bold text-slate-700">Pantauan Tunggakan Kelas</h2>
+function riwayatSiswa() {
+  const mine = S.pembayaran.filter(p => p.nisn === S.user.nisn).sort((a, b) => (b.tanggal || "").localeCompare(a.tanggal || ""));
+  const total = mine.reduce((a, p) => a + Number(p.nominal || 0), 0);
+
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <div class="text-xs text-slate-500">Total setoran saya</div>
+      <div class="text-2xl font-bold text-brand-800">${rupiah(total)}</div>
+      <div class="text-xs text-slate-500 mt-1">${mine.length} kali setoran tercatat</div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+      <div class="p-4 font-semibold text-sm text-slate-700">🧾 Riwayat Setoran Pribadi</div>
+      ${mine.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada setoran tercatat.</div>` :
+        mine.map(p => `
+          <div class="p-3.5 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 grid place-items-center text-sm font-bold">${(p.hari || "K")[0]}</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium">${esc(p.hari || "Kas")}, ${fmtTanggal(p.tanggal)}</div>
+              <div class="text-[11px] text-slate-400">Dicatat oleh ${esc(p.oleh || "-")}</div>
+            </div>
+            <b class="text-sm text-emerald-700">+${rupiah(p.nominal)}</b>
+          </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function weekDates(offset) {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7) + offset * 7);
+  const rabu = new Date(d); rabu.setDate(d.getDate() + 2);
+  const jumat = new Date(d); jumat.setDate(d.getDate() + 4);
+  return { senin: d, rabu, jumat };
+}
+
+function kelolaKasPage() {
+  const w = weekDates(S.weekOffset);
+  const rabuKey = dateKey(w.rabu), jumatKey = dateKey(w.jumat);
+  const rabuNum = Number(S.config.kasRabu), jumatNum = Number(S.config.kasJumat);
+  const siswa = [...S.siswa].sort((a, b) => (a.absen || 0) - (b.absen || 0));
+
+  const lunasRabu = siswa.filter(s => paidDates(s.nisn).has(rabuKey)).length;
+  const lunasJumat = siswa.filter(s => paidDates(s.nisn).has(jumatKey)).length;
+
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+      <div class="flex items-center justify-between mb-3">
+        <button onclick="ubahMinggu(-1)" class="px-3 py-1.5 rounded-lg bg-slate-100 text-sm font-semibold">←</button>
+        <div class="text-center">
+          <div class="text-sm font-bold text-slate-700">Minggu ${S.weekOffset === 0 ? "Ini" : (S.weekOffset > 0 ? `+${S.weekOffset}` : S.weekOffset)}</div>
+          <div class="text-[11px] text-slate-500">${fmtTanggal(rabuKey)} (Rabu) • ${fmtTanggal(jumatKey)} (Jumat)</div>
         </div>
-        <div id="tunggakan-list-wali"></div>
+        <button onclick="ubahMinggu(1)" class="px-3 py-1.5 rounded-lg bg-slate-100 text-sm font-semibold">→</button>
       </div>
+      <div class="grid grid-cols-2 gap-2 text-center">
+        <div class="p-2.5 rounded-xl bg-emerald-50">
+          <div class="text-xs text-emerald-700 font-semibold">Rabu ${rupiah(rabuNum)}</div>
+          <div class="text-lg font-bold text-emerald-800">${lunasRabu}/${siswa.length}</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-emerald-50">
+          <div class="text-xs text-emerald-700 font-semibold">Jumat ${rupiah(jumatNum)}</div>
+          <div class="text-lg font-bold text-emerald-800">${lunasJumat}/${siswa.length}</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mt-3">
+        <button onclick="openQuickAdd()" class="bg-brand-700 hover:bg-brand-800 text-white text-sm font-semibold py-2.5 rounded-xl transition">⚡ Tambah Nominal Cepat</button>
+        <button onclick="openBulkNotif()" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold py-2.5 rounded-xl transition">📢 Notifikasi Massal</button>
+      </div>
+    </div>
 
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <h2 class="text-sm font-bold text-slate-700 mb-3">Pengaturan Sistem</h2>
-        <div class="space-y-3">
-          <div>
-            <label class="text-xs font-bold text-slate-500">Ubah PIN Wali Kelas</label>
-            <div class="flex gap-2 mt-1">
-              <input type="password" id="new-pin" class="flex-1 border p-2 rounded-lg text-sm" placeholder="PIN Baru">
-              <button onclick="simpanPIN()" class="bg-slate-800 text-white px-4 rounded-lg text-sm">Simpan</button>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-slate-50 flex items-center justify-between">
+        <h3 class="font-semibold text-sm text-slate-700">💳 Status Pembayaran Siswa</h3>
+        <span class="text-[11px] text-slate-400">${siswa.length} siswa</span>
+      </div>
+      <div class="divide-y divide-slate-50 max-h-[62vh] overflow-y-auto">
+        ${siswa.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada data siswa. Import dulu di halaman Siswa.</div>` :
+          siswa.map(s => {
+            const pRabu = paidDates(s.nisn).has(rabuKey);
+            const pJumat = paidDates(s.nisn).has(jumatKey);
+            return `
+            <div class="p-3 flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-slate-100 grid place-items-center text-xs font-bold text-slate-600 shrink-0">${esc(s.absen)}</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium truncate">${esc(s.nama)} ${s.isBendahara ? `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">Bendahara</span>` : ""}</div>
+                <div class="text-[11px] text-slate-400 truncate">${esc(s.nisn)}</div>
+              </div>
+              <button onclick="toggleBayar('${esc(s.nisn)}','${rabuKey}','Rabu')"
+                class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition ${pRabu ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}">
+                Rabu ${pRabu ? "✓" : ""}
+              </button>
+              <button onclick="toggleBayar('${esc(s.nisn)}','${jumatKey}','Jumat')"
+                class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition ${pJumat ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}">
+                Jumat ${pJumat ? "✓" : ""}
+              </button>
+            </div>`;
+          }).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+window.ubahMinggu = (delta) => { S.weekOffset += delta; render(); };
+
+window.toggleBayar = async (nisn, tanggal, hari) => {
+  try {
+    const id = `${nisn}_${tanggal}`;
+    const ref = doc(db, "pembayaran", id);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await deleteDoc(ref);
+      toast("Pembayaran dibatalkan", "info");
+    } else {
+      const s = S.siswa.find(x => x.nisn === nisn);
+      await setDoc(ref, {
+        nisn, nama: s?.nama || "", tanggal, hari,
+        nominal: hari === "Rabu" ? Number(S.config.kasRabu) : Number(S.config.kasJumat),
+        oleh: S.user.nama || S.user.role, waktu: nowISO()
+      });
+      toast("Pembayaran dicatat ✅", "success");
+    }
+  } catch (e) { toast("Gagal: " + e.message, "error"); }
+};
+
+window.openQuickAdd = () => {
+  const opts = [...S.siswa].sort((a, b) => (a.absen||0)-(b.absen||0))
+    .map(s => `<option value="${esc(s.nisn)}">${esc(s.absen)}. ${esc(s.nama)}</option>`).join("");
+  const nominals = [2000, 4000, 5000, 10000, 50000, 100000];
+
+  openModal("⚡ Tambah Nominal Cepat / Saldo Awal", `
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs font-medium text-slate-500">Tujuan</label>
+        <select id="qaTarget" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200">
+          <option value="">— Pemasukan Lain / Saldo Awal Kas —</option>
+          ${opts}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Nominal</label>
+        <div class="grid grid-cols-3 gap-2 mt-1">
+          ${nominals.map(n => `<button type="button" onclick="document.getElementById('qaNominal').value=${n}" class="py-2 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold hover:bg-emerald-100">+${rupiah(n)}</button>`).join("")}
+        </div>
+        <input id="qaNominal" type="number" placeholder="Nominal lain" class="w-full mt-2 px-3 py-2.5 rounded-xl border border-slate-200" />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Keterangan</label>
+        <input id="qaKet" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" placeholder="cth: Saldo kas sebelum aplikasi / setoran susulan" />
+      </div>
+      <button onclick="submitQuickAdd()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Simpan</button>
+    </div>
+  `);
+};
+
+window.submitQuickAdd = async () => {
+  try {
+    const target = document.getElementById("qaTarget").value;
+    const nominal = Number(document.getElementById("qaNominal").value);
+    const ket = document.getElementById("qaKet").value.trim() || "Pemasukan cepat";
+    if (!nominal || nominal <= 0) return toast("Nominal tidak valid", "error");
+
+    if (target) {
+      const s = S.siswa.find(x => x.nisn === target);
+      const tgl = dateKey(new Date());
+      let id = `${target}_${tgl}`;
+      const snap = await getDoc(doc(db, "pembayaran", id));
+      if (snap.exists()) id = `${target}_${tgl}_${Date.now()}`;
+      await setDoc(doc(db, "pembayaran", id), {
+        nisn: target, nama: s?.nama || "", tanggal: tgl,
+        hari: new Date().getDay() === 3 ? "Rabu" : new Date().getDay() === 5 ? "Jumat" : "Tambahan",
+        nominal, oleh: S.user.nama || S.user.role, keterangan: ket, waktu: nowISO()
+      });
+      toast("Setoran siswa dicatat ✅", "success");
+    } else {
+      await addDoc(collection(db, "transaksi"), {
+        tipe: "masuk", nominal, kategori: "Saldo Awal",
+        keterangan: ket, tanggal: dateKey(new Date()),
+        status: "disetujui", oleh: S.user.nama || S.user.role, waktu: nowISO()
+      });
+      toast("Pemasukan kas dicatat ✅", "success");
+    }
+    closeModal();
+  } catch (e) { toast("Gagal: " + e.message, "error"); }
+};
+
+let tFilter = "semua";
+window.setTFilter = (f) => { tFilter = f; render(); };
+
+function tunggakanPage() {
+  const data = S.siswa.map(s => ({ s, st: studentStats(s) })).filter(x => x.st.tunggakanCount > 0)
+    .sort((a, b) => b.st.tunggakanCount - a.st.tunggakanCount);
+  const lewat = data.filter(x => x.st.lewatBatas);
+  const belum = data.filter(x => !x.st.lewatBatas);
+  const shown = tFilter === "lewat" ? lewat : tFilter === "belum" ? belum : data;
+
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-red-50 border border-red-100 rounded-2xl p-4">
+        <div class="text-2xl font-bold text-red-600">${lewat.length}</div>
+        <div class="text-xs text-red-700 font-medium mt-1">Melewati Batas</div>
+      </div>
+      <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4">
+        <div class="text-2xl font-bold text-amber-600">${belum.length}</div>
+        <div class="text-xs text-amber-700 font-medium mt-1">Belum Melewati Batas</div>
+      </div>
+    </div>
+
+    <div class="flex gap-2 overflow-x-auto no-scrollbar text-xs font-semibold">
+      ${[["semua","Semua Penunggak"],["lewat","Melewati Batas"],["belum","Belum Melewati Batas"]].map(([k, l]) => `
+        <button onclick="setTFilter('${k}')"
+          class="whitespace-nowrap px-3 py-2 rounded-xl transition ${tFilter === k ? "bg-brand-700 text-white" : "bg-white border border-slate-200 text-slate-600"}">
+          ${l}
+        </button>`).join("")}
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+      <div class="p-4 flex items-center justify-between">
+        <h3 class="font-semibold text-sm text-slate-700">⚠️ Daftar Penunggak</h3>
+        <span class="text-[11px] text-slate-400">Batas: ${S.config.batasTunggakan} jadwal</span>
+      </div>
+      ${shown.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Tidak ada data pada filter ini.</div>` :
+        shown.map(({ s, st }) => `
+        <div class="p-3.5">
+          <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-full ${st.lewatBatas ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"} grid place-items-center text-xs font-bold shrink-0">${esc(s.absen)}</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold truncate">${esc(s.nama)}</div>
+              <div class="text-[11px] text-slate-400">${st.tunggakanCount} jadwal • ${rupiah(st.tunggakanNominal)}</div>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-1 rounded-full ${st.lewatBatas ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}">
+              ${st.lewatBatas ? "MELEWATI BATAS" : "DALAM BATAS"}
+            </span>
+          </div>
+          <div class="mt-2 flex gap-2">
+            <button onclick="openKirimNotif('${esc(s.nisn)}')" class="flex-1 text-[11px] font-bold bg-brand-700 text-white py-1.5 rounded-lg">🔔 Kirim Notifikasi</button>
+            <button onclick="lihatTunggakan('${esc(s.nisn)}')" class="flex-1 text-[11px] font-bold bg-slate-100 text-slate-700 py-1.5 rounded-lg">📋 Rincian</button>
+          </div>
+        </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+window.lihatTunggakan = (nisn) => {
+  const s = S.siswa.find(x => x.nisn === nisn);
+  const st = studentStats(s);
+  openModal(`Rincian Tunggakan — ${s.nama}`, `
+    <div class="space-y-2">
+      <div class="p-3 rounded-xl ${st.lewatBatas ? "bg-red-50" : "bg-amber-50"} text-sm">
+        <b>${st.tunggakanCount} jadwal</b> belum dibayar • <b>${rupiah(st.tunggakanNominal)}</b><br/>
+        <span class="text-xs">Status: ${st.lewatBatas ? "MELEWATI BATAS" : "Masih dalam batas"} (batas ${st.batas} jadwal)</span>
+      </div>
+      <div class="max-h-72 overflow-y-auto space-y-1.5">
+        ${st.unpaid.slice().reverse().map(j => `
+          <div class="flex justify-between text-xs p-2 rounded-lg bg-slate-50">
+            <span>${j.hari}, ${fmtTanggal(j.tanggal)}</span>
+            <b>${rupiah(j.nominal)}</b>
+          </div>`).join("")}
+      </div>
+    </div>
+  `);
+};
+
+window.openKirimNotif = (nisn) => {
+  const s = S.siswa.find(x => x.nisn === nisn);
+  openModal(`🔔 Kirim Notifikasi ke ${s.nama}`, `
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs font-medium text-slate-500">Template siap pakai</label>
+        <div class="space-y-1.5 mt-1">
+          ${TEMPLATES.map((t, i) => `
+            <button type="button" onclick="document.getElementById('notifPesan').value=this.dataset.t"
+              data-t="${esc(t.replace(/\[Nama\]/g, s.nama))}"
+              class="w-full text-left text-xs p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 transition">
+              ${esc(t.replace(/\[Nama\]/g, s.nama))}
+            </button>`).join("")}
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Pesan (bisa diedit bebas)</label>
+        <textarea id="notifPesan" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm"></textarea>
+      </div>
+      <button onclick="kirimNotifSiswa('${esc(nisn)}')" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Kirim Sekarang</button>
+    </div>
+  `);
+};
+
+window.kirimNotifSiswa = async (nisn) => {
+  const pesan = document.getElementById("notifPesan").value.trim();
+  if (!pesan) return toast("Pesan tidak boleh kosong", "error");
+  const s = S.siswa.find(x => x.nisn === nisn);
+  await kirimNotif({ target: "siswa", nisn, judul: "Pengingat Kas Kelas", pesan, tipe: "info" });
+  await addDoc(collection(db, "logNotif"), { target: "siswa", nisn, nama: s?.nama, pesan, oleh: S.user.nama || S.user.role, waktu: nowISO() });
+  toast("Notifikasi terkirim ✅", "success");
+  closeModal();
+};
+
+window.openBulkNotif = () => {
+  openModal("📢 Notifikasi Massal ke Semua Siswa", `
+    <div class="space-y-3">
+      <textarea id="bulkPesan" rows="4" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="Tulis pengumuman untuk seluruh kelas..."></textarea>
+      <button onclick="kirimBulk()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Kirim ke Semua Siswa</button>
+    </div>
+  `);
+};
+
+window.kirimBulk = async () => {
+  const pesan = document.getElementById("bulkPesan").value.trim();
+  if (!pesan) return toast("Pesan kosong", "error");
+  await kirimNotif({ target: "siswa", nisn: null, judul: "Pengumuman Kas Kelas", pesan, tipe: "info" });
+  await addDoc(collection(db, "logNotif"), { target: "siswa", nisn: null, pesan, oleh: S.user.nama || S.user.role, waktu: nowISO() });
+  toast("Pengumuman terkirim ✅", "success");
+  closeModal();
+};
+
+function pengajuanPage() {
+  const list = S.pengajuan;
+  const pending = list.filter(p => p.status === "menunggu");
+  const done = list.filter(p => p.status !== "menunggu");
+
+  return `
+  <div class="space-y-4 fade-in">
+    ${S.user.role === "bendahara" ? `
+      <button onclick="openFormPengajuan()" class="w-full bg-brand-700 hover:bg-brand-800 text-white py-3 rounded-xl font-semibold transition">
+        ➕ Ajukan Penggunaan Uang Kas
+      </button>` : ""}
+
+    ${S.user.role === "wali" && pending.length ? `
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm">
+        <b>${pending.length} pengajuan</b> menunggu keputusan Anda.
+      </div>` : ""}
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+      <div class="p-4 font-semibold text-sm text-slate-700">📥 Menunggu Persetujuan (${pending.length})</div>
+      ${pending.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Tidak ada pengajuan menunggu.</div>` :
+        pending.map(p => pengajuanCard(p, true)).join("")}
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+      <div class="p-4 font-semibold text-sm text-slate-700">📁 Riwayat Keputusan</div>
+      ${done.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada riwayat.</div>` :
+        done.map(p => pengajuanCard(p, false)).join("")}
+    </div>
+  </div>`;
+}
+
+function pengajuanCard(p, isPending) {
+  const badge = p.status === "disetujui"
+    ? `<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">DISETUJUI</span>`
+    : p.status === "ditolak"
+    ? `<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-red-100 text-red-700">DITOLAK</span>`
+    : `<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">MENUNGGU</span>`;
+
+  return `
+  <div class="p-4 space-y-2">
+    <div class="flex items-start justify-between gap-2">
+      <div class="min-w-0">
+        <div class="text-sm font-semibold truncate">${esc(p.kategori || "Lain-lain")}</div>
+        <div class="text-[11px] text-slate-400">${fmtTanggal(p.tanggalPakai || p.waktu)} • oleh ${esc(p.oleh || "-")}</div>
+      </div>
+      ${badge}
+    </div>
+    <div class="text-lg font-bold text-brand-800">${rupiah(p.nominal)}</div>
+    <div class="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg">${esc(p.keterangan || "-")}</div>
+    ${p.catatanWali ? `<div class="text-xs text-red-700 bg-red-50 p-2.5 rounded-lg"><b>Catatan Wali:</b> ${esc(p.catatanWali)}</div>` : ""}
+    ${isPending && S.user.role === "wali" ? `
+      <div class="flex gap-2 pt-1">
+        <button onclick="putuskanPengajuan('${p.id}','disetujui')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 rounded-xl">✓ Setuju</button>
+        <button onclick="openTolak('${p.id}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 rounded-xl">✗ Tidak Setuju</button>
+      </div>` : ""}
+  </div>`;
+}
+
+window.openFormPengajuan = () => {
+  const kat = (S.config.kategori || []).map(k => `<option>${esc(k)}</option>`).join("");
+  openModal("➕ Pengajuan Penggunaan Uang Kas", `
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs font-medium text-slate-500">Nominal</label>
+        <input id="pjNominal" type="number" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" placeholder="cth: 25000" />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Kategori Tujuan</label>
+        <select id="pjKategori" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200">${kat}</select>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Tanggal Pakai</label>
+        <input id="pjTanggal" type="date" value="${dateKey(new Date())}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Keterangan</label>
+        <textarea id="pjKet" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="Rincian penggunaan..."></textarea>
+      </div>
+      <button onclick="submitPengajuan()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Kirim Pengajuan</button>
+    </div>
+  `);
+};
+
+window.submitPengajuan = async () => {
+  try {
+    const nominal = Number(document.getElementById("pjNominal").value);
+    const kategori = document.getElementById("pjKategori").value;
+    const tanggalPakai = document.getElementById("pjTanggal").value;
+    const keterangan = document.getElementById("pjKet").value.trim();
+    if (!nominal || nominal <= 0) return toast("Nominal tidak valid", "error");
+
+    await addDoc(collection(db, "pengajuan"), {
+      nominal, kategori, tanggalPakai, keterangan,
+      status: "menunggu", oleh: S.user.nama, waktu: nowISO()
+    });
+
+    await kirimNotif({
+      target: "wali",
+      judul: "📥 Pengajuan Penggunaan Kas Baru",
+      pesan: `Bendahara ${S.user.nama} mengajukan ${rupiah(nominal)} untuk "${kategori}". ${keterangan ? "Ket: " + keterangan : ""}`,
+      tipe: "warning"
+    });
+
+    toast("Pengajuan terkirim ke Wali Kelas ✅", "success");
+    closeModal();
+  } catch (e) { toast("Gagal: " + e.message, "error"); }
+};
+
+window.openTolak = (id) => {
+  openModal("Alasan Penolakan", `
+    <div class="space-y-3">
+      <textarea id="tolakCatatan" rows="3" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="Tulis alasan penolakan..."></textarea>
+      <button onclick="putuskanPengajuan('${id}','ditolak')" class="w-full bg-red-600 text-white py-3 rounded-xl font-semibold">Tolak Pengajuan</button>
+    </div>
+  `);
+};
+
+window.putuskanPengajuan = async (id, status) => {
+  try {
+    const p = S.pengajuan.find(x => x.id === id);
+    const catatanWali = status === "ditolak"
+      ? (document.getElementById("tolakCatatan")?.value.trim() || "Tidak ada catatan.")
+      : "";
+
+    await updateDoc(doc(db, "pengajuan", id), {
+      status, catatanWali, diputuskanOleh: S.user.nama, waktuKeputusan: nowISO()
+    });
+
+    if (status === "disetujui") {
+      await addDoc(collection(db, "transaksi"), {
+        tipe: "keluar", nominal: Number(p.nominal), kategori: p.kategori,
+        keterangan: p.keterangan || "", tanggal: p.tanggalPakai || dateKey(new Date()),
+        status: "disetujui", oleh: "Wali Kelas", sumberPengajuan: id, waktu: nowISO()
+      });
+    }
+
+    await kirimNotif({
+      target: "bendahara",
+      judul: status === "disetujui" ? "✅ Pengajuan Disetujui" : "❌ Pengajuan Ditolak",
+      pesan: status === "disetujui"
+        ? `Pengajuan ${rupiah(p.nominal)} untuk "${p.kategori}" telah DISETUJUI oleh Wali Kelas. Pengeluaran resmi tercatat.`
+        : `Pengajuan ${rupiah(p.nominal)} untuk "${p.kategori}" DITOLAK. Catatan: ${catatanWali}`,
+      tipe: status === "disetujui" ? "success" : "warning"
+    });
+
+    toast(status === "disetujui" ? "Pengajuan disetujui ✅" : "Pengajuan ditolak", status === "disetujui" ? "success" : "warning");
+    closeModal();
+  } catch (e) { toast("Gagal: " + e.message, "error"); }
+};
+
+function transaksiPage() {
+  const list = [...S.transaksi].sort((a, b) => (b.waktu || b.tanggal || "").localeCompare(a.waktu || a.tanggal || ""));
+  const t = totals();
+
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="grid grid-cols-3 gap-2">
+      ${statCard("Saldo", rupiah(t.saldo), "", "brand")}
+      ${statCard("Masuk", rupiah(t.masuk), "", "green")}
+      ${statCard("Keluar", rupiah(t.keluar), "", "red")}
+    </div>
+
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="openFormTransaksi('masuk')" class="bg-emerald-600 text-white py-2.5 rounded-xl text-sm font-semibold">➕ Pemasukan</button>
+      <button onclick="openFormTransaksi('keluar')" class="bg-slate-800 text-white py-2.5 rounded-xl text-sm font-semibold">➖ Pengeluaran</button>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+      <div class="p-4 font-semibold text-sm text-slate-700">📒 Riwayat Transaksi</div>
+      ${list.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada transaksi.</div>` :
+        list.map(x => `
+        <div class="p-3.5 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full grid place-items-center text-sm font-bold shrink-0 ${x.tipe === "masuk" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}">
+            ${x.tipe === "masuk" ? "↓" : "↑"}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium truncate">${esc(x.kategori || "-")}</div>
+            <div class="text-[11px] text-slate-400 truncate">${fmtTanggal(x.tanggal)} • ${esc(x.keterangan || "-")}</div>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="text-sm font-bold ${x.tipe === "masuk" ? "text-emerald-700" : "text-red-600"}">
+              ${x.tipe === "masuk" ? "+" : "−"}${rupiah(x.nominal)}
+            </div>
+            <button onclick="hapusTransaksi('${x.id}')" class="text-[10px] text-slate-400 hover:text-red-600">hapus</button>
+          </div>
+        </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+window.openFormTransaksi = (tipe) => {
+  const kat = (S.config.kategori || []).map(k => `<option>${esc(k)}</option>`).join("");
+  openModal(tipe === "masuk" ? "➕ Pemasukan Kas" : "➖ Pengeluaran Kas", `
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs font-medium text-slate-500">Nominal</label>
+        <input id="trNominal" type="number" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Kategori</label>
+        <select id="trKategori" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200">
+          ${tipe === "masuk" ? `<option>Saldo Awal</option><option>Donasi</option><option>Lain-lain</option>` : kat}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Tanggal</label>
+        <input id="trTanggal" type="date" value="${dateKey(new Date())}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Keterangan</label>
+        <input id="trKet" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
+      </div>
+      <button onclick="submitTransaksi('${tipe}')" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Simpan</button>
+    </div>
+  `);
+};
+
+window.submitTransaksi = async (tipe) => {
+  const nominal = Number(document.getElementById("trNominal").value);
+  if (!nominal || nominal <= 0) return toast("Nominal tidak valid", "error");
+  await addDoc(collection(db, "transaksi"), {
+    tipe, nominal,
+    kategori: document.getElementById("trKategori").value,
+    tanggal: document.getElementById("trTanggal").value,
+    keterangan: document.getElementById("trKet").value.trim(),
+    status: "disetujui", oleh: S.user.nama || S.user.role, waktu: nowISO()
+  });
+  toast("Transaksi tersimpan ✅", "success");
+  closeModal();
+};
+
+window.hapusTransaksi = async (id) => {
+  if (!confirm("Hapus transaksi ini?")) return;
+  await deleteDoc(doc(db, "transaksi", id));
+  toast("Transaksi dihapus", "info");
+};
+
+function siswaPage() {
+  const list = [...S.siswa].sort((a, b) => (a.absen || 0) - (b.absen || 0));
+  const sudahSeed = S.siswa.length >= SEED_SISWA.length;
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="openFormSiswa()" class="bg-brand-700 text-white py-3 rounded-xl font-semibold">➕ Tambah Siswa</button>
+      <button onclick="seedSiswa()" class="bg-emerald-600 text-white py-3 rounded-xl font-semibold">📥 Import IX F</button>
+    </div>
+
+    ${!sudahSeed && S.siswa.length > 0 ? `
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+        Database memiliki ${S.siswa.length} siswa. Klik "Import IX F" untuk melengkapi menjadi 31 siswa.
+      </div>` : ""}
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+      <div class="p-4 flex justify-between items-center">
+        <h3 class="font-semibold text-sm text-slate-700">👥 Daftar Siswa</h3>
+        <span class="text-[11px] text-slate-400">${list.length} siswa</span>
+      </div>
+      ${list.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada data siswa. Klik "Import IX F".</div>` :
+        list.map(s => `
+        <div class="p-3.5 flex items-center gap-2">
+          <div class="w-9 h-9 rounded-full bg-slate-100 grid place-items-center text-xs font-bold text-slate-600 shrink-0">${esc(s.absen)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium truncate">${esc(s.nama)}
+              ${s.isBendahara ? `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded ml-1">Bendahara</span>` : ""}
+            </div>
+            <div class="text-[11px] text-slate-400">NISN ${esc(s.nisn)}</div>
+          </div>
+          <button onclick="toggleBendahara('${esc(s.nisn)}')" class="text-[11px] font-bold px-2 py-1.5 rounded-lg bg-slate-100 text-slate-700">
+            ${s.isBendahara ? "Cabut" : "Jadikan Bendahara"}
+          </button>
+          <button onclick="openFormSiswa('${esc(s.nisn)}')" class="text-slate-400 hover:text-brand-700 px-1">✏️</button>
+          <button onclick="hapusSiswa('${esc(s.nisn)}')" class="text-slate-400 hover:text-red-600 px-1">🗑️</button>
+        </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+window.seedSiswa = async () => {
+  if (!confirm("Import 31 siswa Kelas IX F ke database?\nSiswa yang sudah ada tidak akan terduplikasi.")) return;
+  try {
+    toast("Meng-import siswa...", "info");
+    const existing = new Set(S.siswa.map(s => s.nisn));
+    const toAdd = SEED_SISWA.filter(s => !existing.has(s.nisn));
+    if (toAdd.length === 0) {
+      toast("Semua siswa IX F sudah ada di database ✅", "success");
+      return;
+    }
+    for (const s of toAdd) {
+      await setDoc(doc(db, "siswa", s.nisn), {
+        nisn: s.nisn, nama: s.nama, absen: s.absen,
+        isBendahara: false, waktu: nowISO()
+      });
+    }
+    toast(`${toAdd.length} siswa berhasil diimport ✅`, "success");
+  } catch (e) {
+    toast("Gagal import: " + e.message, "error");
+  }
+};
+
+window.openFormSiswa = (nisn = null) => {
+  const s = nisn ? S.siswa.find(x => x.nisn === nisn) : null;
+  openModal(s ? "✏️ Edit Siswa" : "➕ Tambah Siswa", `
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs font-medium text-slate-500">NISN</label>
+        <input id="swNisn" value="${esc(s?.nisn || "")}" ${s ? "disabled" : ""} class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 disabled:bg-slate-100" />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Nama Lengkap</label>
+        <input id="swNama" value="${esc(s?.nama || "")}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Nomor Absen</label>
+        <input id="swAbsen" type="number" value="${esc(s?.absen || "")}" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200" />
+      </div>
+      <button onclick="submitSiswa(${s ? `'${esc(s.nisn)}'` : "null"})" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Simpan</button>
+    </div>
+  `);
+};
+
+window.submitSiswa = async (nisn) => {
+  const nisnVal = nisn || document.getElementById("swNisn").value.trim();
+  const nama = document.getElementById("swNama").value.trim();
+  const absen = document.getElementById("swAbsen").value.trim();
+  if (!nisnVal || !nama || !absen) return toast("Lengkapi semua data", "error");
+
+  const ref = doc(db, "siswa", nisnVal);
+  const snap = await getDoc(ref);
+  await setDoc(ref, {
+    nisn: nisnVal, nama, absen: Number(absen),
+    isBendahara: snap.exists() ? !!snap.data().isBendahara : false,
+    waktu: nowISO()
+  }, { merge: true });
+  toast("Data siswa tersimpan ✅", "success");
+  closeModal();
+};
+
+window.toggleBendahara = async (nisn) => {
+  const s = S.siswa.find(x => x.nisn === nisn);
+  await updateDoc(doc(db, "siswa", nisn), { isBendahara: !s.isBendahara });
+  toast(!s.isBendahara ? "Bendahara ditunjuk ✅" : "Akses bendahara dicabut", "info");
+};
+
+window.hapusSiswa = async (nisn) => {
+  if (!confirm("Hapus siswa ini beserta datanya?")) return;
+  await deleteDoc(doc(db, "siswa", nisn));
+  toast("Siswa dihapus", "info");
+};
+
+function notifPage() {
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-bold text-slate-800">🔔 Kotak Masuk</h2>
+      <button onclick="bacaSemua()" class="text-xs font-semibold bg-slate-100 px-3 py-1.5 rounded-lg">Tandai semua dibaca</button>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm divide-y divide-slate-50">
+      ${S.notif.length === 0 ? `<div class="p-6 text-center text-sm text-slate-400">Belum ada notifikasi.</div>` :
+        S.notif.map(n => `
+        <div class="p-3.5 ${n.dibaca ? "" : "bg-emerald-50/50"}" onclick="bacaNotif('${n.id}')">
+          <div class="flex items-start gap-2">
+            ${!n.dibaca ? `<span class="w-2 h-2 rounded-full bg-red-500 mt-1.5 shrink-0"></span>` : `<span class="w-2 h-2 mt-1.5 shrink-0"></span>`}
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold">${esc(n.judul)}</div>
+              <div class="text-xs text-slate-600 mt-0.5">${esc(n.pesan)}</div>
+              <div class="text-[10px] text-slate-400 mt-1">${esc((n.waktu || "").slice(0, 16).replace("T", " "))}</div>
             </div>
           </div>
+        </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+window.bacaNotif = async (id) => {
+  const n = S.notif.find(x => x.id === id);
+  if (n && !n.dibaca) await updateDoc(doc(db, "notifikasi", id), { dibaca: true });
+};
+
+window.bacaSemua = async () => {
+  const unread = S.notif.filter(n => !n.dibaca);
+  await Promise.all(unread.map(n => updateDoc(doc(db, "notifikasi", n.id), { dibaca: true })));
+  toast("Semua notifikasi ditandai dibaca", "success");
+};
+
+function pengaturanPage() {
+  return `
+  <div class="space-y-4 fade-in">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
+      <h3 class="font-semibold text-sm text-slate-700">⚙️ Pengaturan Kelas</h3>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium text-slate-500">Nama Kelas</label>
+          <input id="cfKelas" value="${esc(S.config.namaKelas)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-500">Tahun Ajaran</label>
+          <input id="cfTahun" value="${esc(S.config.tahunAjaran)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-500">Kas Rabu (Rp)</label>
+          <input id="cfRabu" type="number" value="${S.config.kasRabu}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-500">Kas Jumat (Rp)</label>
+          <input id="cfJumat" type="number" value="${S.config.kasJumat}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-500">Batas Tunggakan (jadwal)</label>
+          <input id="cfBatas" type="number" value="${S.config.batasTunggakan}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-500">Mulai Hitung Jadwal</label>
+          <input id="cfMulai" type="date" value="${esc(S.config.tanggalMulai)}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
         </div>
       </div>
+      <div>
+        <label class="text-xs font-medium text-slate-500">Kategori Pengeluaran (pisahkan koma)</label>
+        <input id="cfKategori" value="${esc((S.config.kategori || []).join(", "))}" class="w-full mt-1 px-3 py-2 rounded-xl border border-slate-200 text-sm" />
+      </div>
+      <button onclick="simpanConfig()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">Simpan Pengaturan</button>
     </div>
 
-  </div>
-</div>
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
+      <h3 class="font-semibold text-sm text-slate-700">🔐 PIN Wali Kelas</h3>
+      <input id="cfPin" type="text" placeholder="PIN baru" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
+      <button onclick="simpanPin()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-semibold">Ubah PIN</button>
+    </div>
 
-<script>
-  window.showLoginTab = function(tab) {
-    document.getElementById('form-siswa').classList.add('hidden');
-    document.getElementById('form-wali').classList.add('hidden');
-    document.getElementById('tab-siswa').className = 'flex-1 py-2 font-bold text-slate-400';
-    document.getElementById('tab-bendahara').className = 'flex-1 py-2 font-bold text-slate-400';
-    document.getElementById('tab-wali').className = 'flex-1 py-2 font-bold text-slate-400';
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
+      <h3 class="font-semibold text-sm text-slate-700">🤖 Migrasi Foto Catatan Lama ke PDF (AI)</h3>
+      <p class="text-xs text-slate-500">Salin prompt berikut, tempel ke ChatGPT/Gemini bersama foto catatan kas lama Anda.</p>
+      <textarea id="aiPrompt" rows="6" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-[11px] leading-relaxed">${esc(AI_PROMPT)}</textarea>
+      <button onclick="salinPrompt()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">📋 Salin Prompt</button>
+    </div>
 
-    if(tab === 'siswa') {
-      document.getElementById('form-siswa').classList.remove('hidden');
-      document.getElementById('tab-siswa').className = 'flex-1 py-2 font-bold text-emerald-600 border-b-2 border-emerald-600';
-    } else if(tab === 'bendahara') {
-      document.getElementById('form-siswa').classList.remove('hidden');
-      document.getElementById('tab-bendahara').className = 'flex-1 py-2 font-bold text-blue-600 border-b-2 border-blue-600';
-    } else {
-      document.getElementById('form-wali').classList.remove('hidden');
-      document.getElementById('tab-wali').className = 'flex-1 py-2 font-bold text-amber-600 border-b-2 border-amber-600';
-    }
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
+      <h3 class="font-semibold text-sm text-slate-700">📱 Notifikasi HP</h3>
+      <p class="text-xs text-slate-500">Aktifkan agar notifikasi muncul di panel notifikasi HP (dengan suara & getar).</p>
+      <button onclick="mintaIzinNotif()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold">🔔 Aktifkan Notifikasi HP</button>
+      <button onclick="tesNotif()" class="w-full bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold">Tes Notifikasi</button>
+    </div>
+  </div>`;
+}
+
+window.simpanConfig = async () => {
+  await setDoc(doc(db, "config", "kelas"), {
+    ...S.config,
+    namaKelas: document.getElementById("cfKelas").value.trim(),
+    tahunAjaran: document.getElementById("cfTahun").value.trim(),
+    kasRabu: Number(document.getElementById("cfRabu").value) || 2000,
+    kasJumat: Number(document.getElementById("cfJumat").value) || 2000,
+    batasTunggakan: Number(document.getElementById("cfBatas").value) || 0,
+    tanggalMulai: document.getElementById("cfMulai").value,
+    kategori: document.getElementById("cfKategori").value.split(",").map(x => x.trim()).filter(Boolean)
+  }, { merge: true });
+  toast("Pengaturan disimpan ✅", "success");
+};
+
+window.simpanPin = async () => {
+  const pin = document.getElementById("cfPin").value.trim();
+  if (pin.length < 4) return toast("PIN minimal 4 karakter", "error");
+  await setDoc(doc(db, "config", "kelas"), { pinWali: pin }, { merge: true });
+  toast("PIN diperbarui ✅", "success");
+};
+
+window.salinPrompt = async () => {
+  const ta = document.getElementById("aiPrompt");
+  try {
+    await navigator.clipboard.writeText(ta.value);
+    toast("Prompt disalin ✅", "success");
+  } catch {
+    ta.select(); document.execCommand("copy"); toast("Prompt disalin ✅", "success");
+  }
+};
+
+window.tesNotif = () => showSystemNotification("Tes Notifikasi 🔔", "Ini contoh notifikasi kas kelas di HP Anda.");
+
+window.openModal = (title, bodyHTML) => {
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = `
+    <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onclick="if(event.target===this)closeModal()">
+      <div class="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] overflow-y-auto">
+        <div class="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-10">
+          <h3 class="font-semibold text-slate-800 text-sm">${esc(title)}</h3>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
+        </div>
+        <div class="p-4">${bodyHTML}</div>
+      </div>
+    </div>`;
+  root.dataset.open = "1";
+};
+
+window.closeModal = () => {
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = "";
+  root.dataset.open = "0";
+  render();
+};
+
+function openDrawer() {
+  const list = S.notif.slice(0, 25);
+  document.getElementById("drawerRoot").innerHTML = `
+    <div class="fixed inset-0 z-40 bg-black/40" onclick="closeDrawer()"></div>
+    <div class="fixed top-0 right-0 h-full w-full max-w-sm bg-white z-50 shadow-2xl flex flex-col">
+      <div class="p-4 border-b flex items-center justify-between">
+        <h3 class="font-bold text-slate-800">🔔 Notifikasi</h3>
+        <div class="flex items-center gap-2">
+          <button onclick="bacaSemua()" class="text-[11px] font-semibold bg-slate-100 px-2.5 py-1.5 rounded-lg">Tandai dibaca</button>
+          <button onclick="closeDrawer()" class="text-slate-400 text-2xl leading-none">&times;</button>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto divide-y divide-slate-50">
+        ${list.length === 0 ? `<div class="p-8 text-center text-sm text-slate-400">Belum ada notifikasi.</div>` :
+          list.map(n => `
+          <div class="p-3.5 ${n.dibaca ? "" : "bg-emerald-50/50"}" onclick="bacaNotif('${n.id}')">
+            <div class="text-sm font-semibold">${esc(n.judul)}</div>
+            <div class="text-xs text-slate-600 mt-0.5">${esc(n.pesan)}</div>
+            <div class="text-[10px] text-slate-400 mt-1">${esc((n.waktu || "").slice(0, 16).replace("T", " "))}</div>
+          </div>`).join("")}
+      </div>
+      <button onclick="closeDrawer();go('notif')" class="m-3 bg-brand-700 text-white py-2.5 rounded-xl text-sm font-semibold">Lihat Semua</button>
+    </div>`;
+}
+window.closeDrawer = () => { document.getElementById("drawerRoot").innerHTML = ""; };
+
+async function boot() {
+  if ("serviceWorker" in navigator) {
+    try { await navigator.serviceWorker.register("./sw.js"); } catch (e) { console.warn("SW gagal:", e); }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    setInterval(() => {
-      if(document.getElementById('b-masuk') && document.getElementById('b-masuk').innerText !== "Rp 0") {
-        document.getElementById('b-masuk-wali').innerText = document.getElementById('b-masuk').innerText;
-        document.getElementById('b-keluar-wali').innerText = document.getElementById('b-keluar').innerText;
-        document.getElementById('b-saldo-wali').innerText = document.getElementById('b-saldo').innerText;
+  if (!FIREBASE_READY) {
+    const err = document.getElementById("loginErr");
+    err.textContent = "Konfigurasi Firebase belum diisi.";
+    err.classList.remove("hidden");
+    return;
+  }
+
+  try {
+    const snap = await getDoc(doc(db, "config", "kelas"));
+    if (snap.exists()) S.config = { ...DEFAULT_CONFIG, ...snap.data() };
+    else { await setDoc(doc(db, "config", "kelas"), DEFAULT_CONFIG); S.config = { ...DEFAULT_CONFIG }; }
+  } catch (e) { console.warn("config init", e); }
+
+  const saved = localStorage.getItem("kas_session");
+  if (saved) {
+    try {
+      const u = JSON.parse(saved);
+      if (u.role === "wali") {
+        S.user = u;
+      } else {
+        const snap = await getDoc(doc(db, "siswa", u.nisn));
+        if (snap.exists()) S.user = { ...u, nama: snap.data().nama, absen: snap.data().absen };
       }
-    }, 1000);
-  });
+    } catch {}
+  }
+
+  if (S.user) {
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    subscribeAll();
+    subscribeNotif();
+    render();
+  }
+}
+
+boot();
 </script>
 </body>
 </html>
