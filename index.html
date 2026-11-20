@@ -66,7 +66,6 @@ tailwind.config = {
       </form>
     </div>
 
-    <!-- TEKS PIN SUDAH DIHAPUS, DIGANTI TEKS UMUM -->
     <p class="text-center text-xs text-slate-400 mt-4 leading-relaxed">
       Silakan login sesuai peran masing-masing.<br/>
       Hubungi Wali Kelas jika mengalami kendala.
@@ -110,7 +109,7 @@ tailwind.config = {
 
 <script type="module">
 /* =========================================================================
-   KONFIGURASI FIREBASE — SUDAH TERPASANG
+   KONFIGURASI FIREBASE
    ========================================================================= */
 const firebaseConfig = {
   apiKey:            "AIzaSyA96aoU5fs_O_DUQH1CVD3s5B9k2Rp6c8k",
@@ -180,7 +179,6 @@ const rupiah = n => "Rp" + (Number(n) || 0).toLocaleString("id-ID");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const nowISO = () => new Date().toISOString();
 
-// MULAI KAS DARI HARI INI (Biar tunggakan 0)
 const TODAY = dateKey(new Date());
 
 const DEFAULT_CONFIG = {
@@ -189,7 +187,7 @@ const DEFAULT_CONFIG = {
   kasRabu: 2000,
   kasJumat: 2000,
   batasTunggakan: 2,
-  tanggalMulai: TODAY, // <-- Ini diubah jadi hari ini
+  tanggalMulai: TODAY,
   pinWali: "130711#$$#",
   kategori: ["Kebersihan Kelas","Konsumsi Rapat","Alat Tulis","Dekorasi Kelas","Sosial / Duka","Lain-lain"]
 };
@@ -231,7 +229,7 @@ const NAV = {
 };
 
 /* =========================================================================
-   NOTIFIKASI
+   NOTIFIKASI (SUDAH DIPERBAIKI UNTUK ANDROID)
    ========================================================================= */
 function toast(msg, type = "info") {
   const colors = { info:"bg-slate-800", success:"bg-emerald-600", error:"bg-red-600", warning:"bg-amber-500" };
@@ -245,11 +243,21 @@ function toast(msg, type = "info") {
 async function showSystemNotification(title, body) {
   try {
     if (!("Notification" in window) || Notification.permission !== "granted") return;
-    const reg = await navigator.serviceWorker?.ready.catch(() => null);
-    const opts = { body, icon:"./icon-192.png", badge:"./icon-192.png", vibrate:[200,100,200], tag:"kas-"+Date.now(), renotify:true };
-    if (reg) await reg.showNotification(title, opts);
-    else new Notification(title, opts);
-  } catch (e) { console.warn("system notif error", e); }
+    
+    // PENTING: Gunakan Service Worker untuk Android (Chrome/Firefox)
+    const reg = await navigator.serviceWorker.ready;
+    
+    await reg.showNotification(title, {
+      body: body,
+      icon: "./icon-192.png",
+      badge: "./icon-192.png",
+      vibrate: [200, 100, 200],
+      tag: "kas-" + Date.now(),
+      renotify: true
+    });
+  } catch (e) { 
+    console.warn("Gagal menampilkan notifikasi sistem:", e); 
+  }
 }
 
 async function mintaIzinNotif() {
@@ -1551,7 +1559,8 @@ window.bacaSemua = async () => {
 };
 
 function pengaturanPage() {
-  const isWali = S.user.role === "wali"; // Cek apakah yang buka Wali Kelas
+  const isWali = S.user.role === "wali";
+  const isBendahara = S.user.role === "bendahara";
   
   return `
   <div class="space-y-4 fade-in">
@@ -1598,12 +1607,44 @@ function pengaturanPage() {
     </div>
     ` : ""}
 
-    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
-      <h3 class="font-semibold text-sm text-slate-700">🤖 Migrasi Foto Catatan Lama ke PDF (AI)</h3>
-      <p class="text-xs text-slate-500">Salin prompt berikut, tempel ke ChatGPT/Gemini bersama foto catatan kas lama Anda.</p>
-      <textarea id="aiPrompt" rows="6" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-[11px] leading-relaxed">${esc(AI_PROMPT)}</textarea>
-      <button onclick="salinPrompt()" class="w-full bg-brand-700 text-white py-3 rounded-xl font-semibold">📋 Salin Prompt</button>
+    <!-- FITUR MIGRASI AI YANG SUDAH DIPERBARUI -->
+    ${(isWali || isBendahara) ? `
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-4">
+      <div class="text-center mb-2">
+        <span class="text-3xl">🤖</span>
+        <h3 class="font-bold text-slate-800 mt-2">Pusat Migrasi Catatan Lama (AI)</h3>
+        <p class="text-xs text-slate-500 mt-1">Gunakan bantuan ChatGPT atau Gemini untuk membaca foto catatan kas lama.</p>
+      </div>
+
+      <!-- 1. Upload File -->
+      <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:bg-slate-50 transition relative">
+        <input type="file" id="aiFile" accept="image/*,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="handleAiFile(this)">
+        <div class="text-slate-500 text-sm">
+          <span class="text-xl block mb-1">📁</span>
+          <span id="aiFileName">Ketuk untuk pilih Foto / PDF</span>
+        </div>
+      </div>
+
+      <!-- 2. Prompt & Aksi -->
+      <div>
+        <label class="text-xs font-medium text-slate-500">1. Salin Prompt Ini</label>
+        <textarea id="aiPrompt" rows="4" class="w-full mt-1 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200 text-[10px] text-slate-600 leading-relaxed" readonly>${esc(AI_PROMPT)}</textarea>
+        <button onclick="salinPrompt()" class="w-full mt-2 bg-slate-800 text-white text-sm py-2 rounded-lg font-semibold">📋 Salin Prompt</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <a href="https://chatgpt.com/" target="_blank" class="bg-emerald-100 text-emerald-800 text-center py-2.5 rounded-xl text-xs font-bold block">Buka ChatGPT ↗</a>
+        <a href="https://gemini.google.com/" target="_blank" class="bg-blue-100 text-blue-800 text-center py-2.5 rounded-xl text-xs font-bold block">Buka Gemini ↗</a>
+      </div>
+
+      <!-- 3. Tempel Hasil -->
+      <div class="border-t border-slate-100 pt-3">
+        <label class="text-xs font-medium text-slate-500">2. Tempel Hasil Rekap dari AI (Opsional)</label>
+        <textarea id="aiResult" rows="3" class="w-full mt-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm" placeholder="Paste hasil rekap dari ChatGPT/Gemini di sini agar tersimpan..."></textarea>
+        <button onclick="simpanHasilAI()" class="w-full mt-2 bg-brand-700 text-white text-sm py-2 rounded-lg font-semibold">Simpan Catatan Rekap</button>
+      </div>
     </div>
+    ` : ""}
 
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3">
       <h3 class="font-semibold text-sm text-slate-700">📱 Notifikasi HP</h3>
@@ -1613,6 +1654,29 @@ function pengaturanPage() {
     </div>
   </div>`;
 }
+
+// FUNGSI UNTUK FITUR AI BARU
+window.handleAiFile = (input) => {
+  if (input.files && input.files[0]) {
+    document.getElementById("aiFileName").textContent = "✅ " + input.files[0].name;
+    document.getElementById("aiFileName").classList.add("text-emerald-600", "font-bold");
+  }
+};
+
+window.simpanHasilAI = async () => {
+  const teks = document.getElementById("aiResult").value.trim();
+  if (!teks) return toast("Tempel hasil rekap AI terlebih dahulu", "error");
+  
+  try {
+    await addDoc(collection(db, "catatan_migrasi"), {
+      teks, oleh: S.user.nama, waktu: nowISO()
+    });
+    toast("Catatan rekap berhasil disimpan ke database ✅", "success");
+    document.getElementById("aiResult").value = "";
+  } catch (e) {
+    toast("Gagal menyimpan: " + e.message, "error");
+  }
+};
 
 window.simpanConfig = async () => {
   if (S.user.role !== "wali") return toast("Hanya Wali Kelas yang bisa mengubah ini!", "error");
@@ -1710,7 +1774,6 @@ async function boot() {
   }
 
   try {
-    // Cek config, jika belum ada atau tanggalMulai di masa lalu, reset ke hari ini
     const snap = await getDoc(doc(db, "config", "kelas"));
     if (snap.exists()) {
       const data = snap.data();
@@ -1724,10 +1787,9 @@ async function boot() {
       S.config = { ...DEFAULT_CONFIG };
     }
 
-    // AUTO IMPORT SISWA: Kalau data kosong, langsung isi 31 siswa
     const siswaSnap = await getDocs(collection(db, "siswa"));
     if (siswaSnap.empty) {
-      await seedSiswa(true); // true = tanpa popup konfirmasi
+      await seedSiswa(true);
     }
 
   } catch (e) { console.warn("boot error", e); }
